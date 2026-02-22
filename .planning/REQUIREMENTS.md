@@ -34,14 +34,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INFR-01**: Astro project with static output deployed to Cloudflare Workers
 - [x] **INFR-02**: Tailwind CSS v4 with brand color tokens (navy, deep blue, electric blue)
-- [ ] **INFR-03**: Shared navigation with logo, page links, and CTA button
-- [ ] **INFR-04**: Shared footer with links and brand info
-- [ ] **INFR-05**: BaseLayout with SEO meta tags on every page
+- [x] **INFR-03**: Shared navigation with logo, page links, and CTA button
+- [x] **INFR-04**: Shared footer with links and brand info
+- [x] **INFR-05**: BaseLayout with SEO meta tags on every page
 - [x] **INFR-06**: Sitemap generation via @astrojs/sitemap
-- [ ] **INFR-07**: Responsive design across mobile, tablet, and desktop
-- [ ] **INFR-08**: Scroll-triggered animations using Motion library
+- [x] **INFR-07**: Responsive design across mobile, tablet, and desktop
+- [x] **INFR-08**: Scroll-triggered animations using Motion library
 - [x] **INFR-09**: Self-hosted fonts via Fontsource
-- [ ] **INFR-10**: Brand logo and assets integrated throughout
+- [x] **INFR-10**: Brand logo and assets integrated throughout
 
 ## v2 Requirements
 
@@ -83,14 +83,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INFR-01 | Phase 1 | Complete |
 | INFR-02 | Phase 1 | Complete |
-| INFR-03 | Phase 1 | Pending |
-| INFR-04 | Phase 1 | Pending |
-| INFR-05 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Complete |
+| INFR-04 | Phase 1 | Complete |
+| INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
-| INFR-07 | Phase 1 | Pending |
-| INFR-08 | Phase 1 | Pending |
+| INFR-07 | Phase 1 | Complete |
+| INFR-08 | Phase 1 | Complete |
 | INFR-09 | Phase 1 | Complete |
-| INFR-10 | Phase 1 | Pending |
+| INFR-10 | Phase 1 | Complete |
 | LAND-01 | Phase 2 | Pending |
 | LAND-02 | Phase 2 | Pending |
 | LAND-03 | Phase 2 | Pending |
