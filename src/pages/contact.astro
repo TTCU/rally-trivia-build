@@ -1,10 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
 ---
 
-<BaseLayout title="Contact" description="Get in touch with Rally Trivia to request a demo for your next event">
-  <section class="py-20 px-8 text-center animate-on-scroll">
-    <h1 class="text-5xl font-bold text-deep-blue mb-4">Contact</h1>
-    <p class="text-xl text-navy/70 max-w-2xl mx-auto">Request a demo — contact form coming soon.</p>
+<BaseLayout title="Request a Demo" description="Request a demo of Rally Trivia for your next fundraiser, team building event, or corporate gathering">
+
+  <!-- Hero Section -->
+  <section class="py-32 md:py-40 px-4 bg-navy text-center animate-on-scroll">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-5xl md:text-6xl font-bold text-white mb-4">Request a Demo</h1>
+      <p class="text-xl text-white/70 max-w-2xl mx-auto">
+        Tell us about your event and we'll show you how Rally Trivia can make it unforgettable.
+      </p>
+    </div>
   </section>
+
+  <!-- Form Section -->
+  <section class="py-24 px-4 bg-white animate-on-scroll">
+    <div class="max-w-xl mx-auto">
+      <ContactForm />
+    </div>
+  </section>
+
 </BaseLayout>
