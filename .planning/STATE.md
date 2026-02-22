@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Visitors understand what Rally Trivia does and request a demo — every page funnels toward that conversion.
-**Current focus:** Phase 3 — Contact Form
+**Current focus:** Phase 3 — Contact Form (executing)
 
 ## Current Position
 
-Phase: 2 of 3 (Content Pages) — PHASE COMPLETE
-Plan: 2 of 2 in current phase — PHASE COMPLETE
-Status: In progress (Phase 2 complete, ready for Phase 3)
-Last activity: 2026-02-22 — Completed plans 02-01 and 02-02: Landing page, features page, about page with full marketing content
+Phase: 3 of 3 (Contact Form) — Plan 03-01 COMPLETE
+Plan: 1 of 1 in current phase — PLAN COMPLETE
+Status: In progress (Phase 3 plan 03-01 complete)
+Last activity: 2026-02-22 — Completed plan 03-01: Demo request form with validation, email typo detection, and thank-you confirmation
 
-Progress: [██████░░░░] 60%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: ~2m
-- Total execution time: ~8m
+- Total execution time: ~10m
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [██████░░░░] 60%
 |-------|-------|-------|----------|
 | 01-infrastructure | 2/2 | 4m 10s | 2m 5s |
 | 02-content-pages | 2/2 | ~4m | ~2m |
+| 03-contact-form | 1/1 | ~2m | ~2m |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 5s), 01-02 (2m 4s), 02-01, 02-02
+- Last 5 plans: 01-02 (2m 4s), 02-01, 02-02, 03-01 (~2m)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -59,6 +60,10 @@ Recent decisions affecting current work:
 - [02-02]: Secondary page heroes use py-32 md:py-40 (not min-h-screen) — reserved for landing page only
 - [02-02]: 12 feature cards with inline SVG icons — zero npm dependencies added
 - [02-02]: Team placeholder uses SVG silhouette avatars with bracket-notation names for easy replacement
+- [03-01]: Centered single-column form layout (max-w-xl) — clean and focused
+- [03-01]: Dynamic import('motion') in submit handler — keeps initial page JS minimal
+- [03-01]: Gold checkmark icon on thank-you view using brand gold/10 background circle
+- [03-01]: Form validation via vanilla JS in Astro script tag with blur listeners (no framework needed)
 
 ### Pending Todos
 
@@ -72,5 +77,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed Phase 2 — all 3 content pages (landing, features, about) fully built with marketing copy
+Stopped at: Completed Phase 3 plan 03-01 — Demo request form with validation and thank-you confirmation
 Resume file: None
