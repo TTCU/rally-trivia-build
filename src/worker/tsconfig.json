@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["../../worker-configuration.d.ts"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"]
+  },
+  "include": ["./**/*.ts"]
+}
