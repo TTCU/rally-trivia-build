@@ -1,0 +1,30 @@
+---
+import '@fontsource-variable/plus-jakarta-sans';
+import BaseHead from '../components/BaseHead.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import ScrollAnimations from '../components/ScrollAnimations.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+}
+
+const { title, description, image } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={title} description={description} image={image} />
+  </head>
+  <body class="bg-white text-navy font-sans min-h-screen flex flex-col">
+    <Nav />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <ScrollAnimations />
+  </body>
+</html>
