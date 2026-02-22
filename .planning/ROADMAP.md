@@ -28,11 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Brand color tokens (navy, deep blue, electric blue) apply correctly in Tailwind utility classes on any page
   4. The sitemap XML is accessible at `/sitemap-index.xml` on the deployed site
   5. The site renders correctly and is usable on mobile (375px), tablet (768px), and desktop (1280px)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Astro project scaffold with Cloudflare Workers config, Tailwind v4, fonts, and sitemap
-- [ ] 01-02: BaseLayout, Nav, Footer, and brand system components
+- [ ] 01-01-PLAN.md — Astro scaffold: strip blog, install Tailwind v4 + Motion + Fontsource, configure static Cloudflare Workers deploy, create placeholder pages
+- [ ] 01-02-PLAN.md — BaseLayout, BaseHead SEO, Nav (responsive + hamburger), Footer, ScrollAnimations, wire all pages
 
 ### Phase 2: Content Pages
 **Goal**: Visitors can navigate the landing page, features page, and about page — each with conversion-oriented marketing copy, scroll animations, and CTAs pointing toward the demo form
