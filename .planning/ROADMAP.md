@@ -44,11 +44,11 @@ Plans:
   3. The features page shows platform capabilities broken down with icons or illustrations
   4. The about page tells the Rally Trivia story with founder/team background
   5. Scroll-triggered animations activate as sections enter the viewport on all content pages
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Landing page — hero, value props, dual audience, how it works, social proof, CTA sections
-- [ ] 02-02: Features page and About page
+- [ ] 02-01-PLAN.md — Landing page: full-viewport hero, value props, dual-audience cards, how it works, social proof stats, final CTA
+- [ ] 02-02-PLAN.md — Features page (icon grid of platform capabilities) and About page (mission story + team placeholder)
 
 ### Phase 3: Contact Form
 **Goal**: A visitor who is ready to request a demo can complete and submit the form and receive a confirmation — the site's primary conversion action is functional
