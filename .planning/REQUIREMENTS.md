@@ -27,8 +27,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Contact
 
-- [ ] **CONT-01**: Demo request form with name, email, organization, event type, and message fields
-- [ ] **CONT-02**: Post-submit confirmation/thank you state
+- [x] **CONT-01**: Demo request form with name, email, organization, event type, and message fields
+- [x] **CONT-02**: Post-submit confirmation/thank you state
 
 ### Site Infrastructure
 
@@ -100,8 +100,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FEAT-02 | Phase 2 | Pending |
 | ABOU-01 | Phase 2 | Pending |
 | ABOU-02 | Phase 2 | Pending |
-| CONT-01 | Phase 3 | Pending |
-| CONT-02 | Phase 3 | Pending |
+| CONT-01 | Phase 3 | Complete |
+| CONT-02 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 21 total
