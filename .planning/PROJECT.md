@@ -25,10 +25,10 @@ Visitors understand what Rally Trivia does and request a demo — every page fun
 
 ### Active
 
-- [ ] Form backend delivery (Resend on Cloudflare Workers)
-- [ ] Replace placeholder social proof stats with real data
-- [ ] Replace placeholder team member names/photos on About page
-- [ ] Analytics integration (Plausible, Fathom, or Cloudflare Web Analytics)
+- [ ] Form backend delivery (Resend API on Cloudflare Workers, single recipient, no auto-reply)
+- [ ] Replace placeholder social proof stats with qualitative highlights (no fake numbers)
+- [ ] Replace placeholder team members with real names, titles, and photos
+- [ ] Cloudflare Web Analytics integration
 
 ### Out of Scope
 
@@ -67,5 +67,15 @@ Contact form is UI-only — backend wiring deferred. Social proof uses placehold
 | Motion library for animations | Scroll-triggered fade-in via inView + animate pattern | ✓ Good — lightweight, smooth |
 | Static assets only (no SSR) | wrangler.jsonc with assets.directory, no worker bindings | ✓ Good — simplest possible deploy |
 
+## Current Milestone: v1.1 Production Polish
+
+**Goal:** Close v1.0 gaps — wire up the form backend, replace placeholder content with real data, and add analytics.
+
+**Target features:**
+- Form backend via Resend on Cloudflare Workers (single recipient, no auto-reply)
+- Social proof rework — qualitative highlights replacing fake stats
+- Real team section on About page
+- Cloudflare Web Analytics
+
 ---
-*Last updated: 2026-02-22 after v1.0 milestone*
+*Last updated: 2026-02-22 after v1.1 milestone start*
