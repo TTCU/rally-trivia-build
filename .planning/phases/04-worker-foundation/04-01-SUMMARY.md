@@ -82,7 +82,7 @@ Each task was committed atomically:
 1. **Task 1: Create Worker stub and restructure wrangler config** - `9f98de4` (feat)
 2. **Task 2: Update dev scripts and add test automation** - `2f40d65` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `8e8eb43` (docs: complete plan)
 
 ## Files Created/Modified
 - `wrangler.jsonc` - Restructured with main entrypoint, ASSETS binding, run_worker_first array
