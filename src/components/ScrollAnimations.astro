@@ -1,0 +1,24 @@
+---
+// ScrollAnimations: Applies fade-in animation to all elements with class="animate-on-scroll"
+// Uses the Motion library (inView + animate) for scroll-triggered animations.
+---
+
+<script>
+  import { animate, inView } from 'motion';
+
+  // Apply fade-in + slide-up to all elements marked animate-on-scroll
+  inView(
+    '.animate-on-scroll',
+    (element) => {
+      animate(
+        element,
+        { opacity: [0, 1], y: [30, 0] },
+        {
+          duration: 0.6,
+          easing: [0.39, 0.24, 0.3, 1],
+        }
+      );
+    },
+    { amount: 0.25 }
+  );
+</script>
