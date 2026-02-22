@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 4 of 7 (Worker Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 — v1.1 roadmap created; phases 4-7 defined
+Plan: 1 of ? in current phase
+Status: In progress
+Last activity: 2026-02-22 — 04-01 Worker Foundation stub complete
 
-Progress: [███░░░░░░░] 30% (3/3 v1.0 phases complete; v1.1 not started)
+Progress: [████░░░░░░] 40% (3/3 v1.0 phases complete; Phase 4 Plan 1 done)
 
 ## Performance Metrics
 
@@ -43,6 +43,10 @@ Recent decisions affecting current work:
 - v1.0: Static assets only (no SSR) — wrangler.jsonc with assets.directory, no worker bindings
 - v1.1: Worker-augmented static pattern — standalone worker/index.ts handles /api/* only; Astro stays in static output mode; no @astrojs/cloudflare adapter
 - v1.1: No auto-reply to form submitters — single recipient delivery only; thank-you UI is sufficient
+- 04-01: run_worker_first array form ["/api/*"] not boolean — Worker invoked only for API routes, not static pages
+- 04-01: src/worker/tsconfig.json separate from root — prevents conflicts with Astro strict tsconfig
+- 04-01: wrangler types over @cloudflare/workers-types npm package — generated file stays in sync with actual bindings
+- 04-01: concurrently for parallel dev scripts — named output and kills-others-on-fail behavior
 
 ### Pending Todos
 
@@ -58,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Roadmap created for v1.1 — ready to plan Phase 4
+Stopped at: Completed 04-01-PLAN.md — Worker stub, wrangler config, combined dev, test script
 Resume file: None

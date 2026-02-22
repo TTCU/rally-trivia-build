@@ -36,7 +36,7 @@
   2. All static pages (/, /features, /about, /contact) continue to serve correctly after wrangler.jsonc changes
   3. The Resend API key is stored as a Wrangler secret and is not present in any source file or git history
   4. Resend sending domain has verified DNS records (DKIM grey-cloud, SPF, DMARC visible as passing in Resend dashboard)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 04-01-PLAN.md — Worker stub, wrangler config, dev scripts, test automation
 - [ ] 04-02-PLAN.md — Resend API key secret storage and DNS verification
@@ -79,7 +79,7 @@ Plans:
 | 1. Infrastructure | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 2. Content Pages | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 3. Contact Form | v1.0 | 1/1 | Complete | 2026-02-22 |
-| 4. Worker Foundation | v1.1 | 0/2 | Not started | - |
+| 4. Worker Foundation | 1/2 | In Progress|  | - |
 | 5. Form Backend | v1.1 | 0/? | Not started | - |
 | 6. Analytics | v1.1 | 0/? | Not started | - |
 | 7. Content Polish | v1.1 | 0/? | Not started | - |
