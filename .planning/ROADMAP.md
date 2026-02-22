@@ -58,10 +58,10 @@ Plans:
   1. The contact page is reachable from CTA buttons on the landing, features, and about pages
   2. The form accepts name, email, organization, event type, and message and visually validates required fields
   3. After submitting the form, the visitor sees a thank-you confirmation state (no backend required — UI only)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 03-01: Demo request form page with ContactForm component, validation, and post-submit confirmation
+- [ ] 03-01-PLAN.md — Demo request form page with ContactForm component, blur validation, email typo detection, and post-submit thank-you confirmation
 
 ## Progress
 
