@@ -6,7 +6,7 @@ const navLinks = [
 ];
 ---
 
-<footer class="bg-navy border-t border-white/10">
+<footer class="bg-footer-dark border-t border-slate-700">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
     <!-- Main footer content -->
@@ -20,10 +20,10 @@ const navLinks = [
             alt="Rally Trivia"
             width="140"
             height="35"
-            class="h-8 w-auto"
+            class="h-8 w-auto brightness-0 invert"
           />
         </a>
-        <p class="text-white/60 text-sm max-w-xs">
+        <p class="text-slate-400 text-sm max-w-xs">
           Interactive trivia for unforgettable events.
         </p>
       </div>
@@ -35,7 +35,7 @@ const navLinks = [
             <li>
               <a
                 href={href}
-                class="text-sm text-white/60 hover:text-white transition-colors duration-200"
+                class="text-sm text-slate-400 hover:text-white transition-colors duration-200"
               >
                 {label}
               </a>
@@ -45,10 +45,28 @@ const navLinks = [
       </nav>
     </div>
 
-    <!-- Divider + Copyright -->
-    <div class="mt-8 pt-6 border-t border-white/10">
-      <p class="text-xs text-white/40 text-center sm:text-left">
-        &copy; 2026 Rally Trivia. All rights reserved.
+    <!-- TTCU Technologies Attribution -->
+    <div class="mt-8 pt-6 border-t border-slate-700">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+        <a href="https://www.ttcu.tech" target="_blank" rel="noopener noreferrer" aria-label="TTCU Technologies">
+          <img
+            src="/images/ttcu-technologies-logo.png"
+            alt="TTCU Technologies"
+            width="120"
+            height="30"
+            class="h-6 w-auto brightness-0 invert"
+          />
+        </a>
+        <p class="text-slate-400 text-sm">
+          Built by <a href="https://www.ttcu.tech" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-white transition-colors">TTCU Technologies</a>, a subdivision of TTCU Federal Credit Union.
+        </p>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="mt-4 pt-4 border-t border-slate-700">
+      <p class="text-xs text-slate-500 text-center sm:text-left">
+        &copy; {new Date().getFullYear()} TTCU Technologies. All rights reserved.
       </p>
     </div>
 

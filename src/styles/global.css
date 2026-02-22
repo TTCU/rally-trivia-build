@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy: #0a1628;
-  --color-deep-blue: #1a3a6b;
-  --color-electric-blue: #2563eb;
-  --color-gold: #f59e0b;
-  --color-coral: #f97316;
+  --color-primary: #2563eb;
+  --color-heading: #1e293b;
+  --color-body: #475569;
+  --color-body-light: #64748b;
+  --color-surface: #f8fafc;
+  --color-surface-blue: #eff6ff;
+  --color-border: #e2e8f0;
+  --color-accent-gold: #f59e0b;
+  --color-footer-dark: #1e293b;
   --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
   --radius-brand: 0.75rem;
 }

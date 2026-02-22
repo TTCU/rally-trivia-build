@@ -49,17 +49,17 @@ const stats = [
 <BaseLayout title="Rally Trivia — Live Trivia for Unforgettable Events" description="Rally Trivia powers live trivia experiences for nonprofit fundraisers and corporate events. Engage your guests, raise more money, and create events people actually remember.">
 
   <!-- Section 1: Hero -->
-  <section class="min-h-screen bg-navy flex items-center justify-center px-4 animate-on-scroll">
+  <section class="min-h-screen bg-surface-blue flex items-center justify-center px-4 animate-on-scroll">
     <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
-        Make Every Event <span class="text-gold">Unforgettable</span>
+      <h1 class="text-5xl md:text-7xl font-bold text-heading leading-tight mb-6">
+        Make Every Event <span class="text-primary">Unforgettable</span>
       </h1>
-      <p class="text-xl md:text-2xl text-white/70 max-w-2xl mx-auto mb-10">
+      <p class="text-xl md:text-2xl text-body max-w-2xl mx-auto mb-10">
         Live trivia experiences that get your guests laughing, competing, and giving generously — all in one night.
       </p>
       <a
         href="/contact"
-        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-gold text-navy hover:bg-gold/90 transition-colors duration-200"
+        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
       >
         Request a Demo
       </a>
@@ -69,16 +69,16 @@ const stats = [
   <!-- Section 2: Value Propositions -->
   <section class="py-24 px-4 bg-white animate-on-scroll">
     <div class="max-w-7xl mx-auto">
-      <h2 class="text-4xl font-bold text-navy text-center mb-4">Why Rally Trivia?</h2>
-      <p class="text-lg text-navy/60 text-center max-w-2xl mx-auto mb-16">
+      <h2 class="text-4xl font-bold text-heading text-center mb-4">Why Rally Trivia?</h2>
+      <p class="text-lg text-body text-center max-w-2xl mx-auto mb-16">
         Because your event deserves more than a slideshow and a silent auction.
       </p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         {valueProps.map(({ title, desc, icon }) => (
           <div class="text-center md:text-left">
-            <div class="text-electric-blue mb-4 flex justify-center md:justify-start" set:html={icon} />
-            <h3 class="text-xl font-bold text-navy mb-2">{title}</h3>
-            <p class="text-navy/60">{desc}</p>
+            <div class="text-primary mb-4 flex justify-center md:justify-start" set:html={icon} />
+            <h3 class="text-xl font-bold text-heading mb-2">{title}</h3>
+            <p class="text-body">{desc}</p>
           </div>
         ))}
       </div>
@@ -86,43 +86,43 @@ const stats = [
   </section>
 
   <!-- Section 3: Dual Audience -->
-  <section class="py-24 px-4 bg-slate-50 animate-on-scroll">
+  <section class="py-24 px-4 bg-surface animate-on-scroll">
     <div class="max-w-7xl mx-auto">
-      <h2 class="text-4xl font-bold text-navy text-center mb-16">Built for Your Event</h2>
+      <h2 class="text-4xl font-bold text-heading text-center mb-16">Built for Your Event</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
         <!-- Card: Nonprofits -->
-        <div class="bg-white rounded-brand p-8 shadow-sm border border-navy/10">
-          <div class="text-gold mb-4">
+        <div class="bg-white rounded-brand p-8 shadow-sm border border-border">
+          <div class="text-primary mb-4">
             <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
           </div>
-          <h3 class="text-2xl font-bold text-navy mb-3">For Nonprofits</h3>
-          <p class="text-navy/60 mb-4">Turn your next gala or fundraiser into the event of the year.</p>
-          <ul class="space-y-2 text-navy/70 mb-6">
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Raise more with built-in donation moments</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Keep guests engaged all night long</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Brand every screen with your mission</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Works for galas, auctions, and community nights</li>
+          <h3 class="text-2xl font-bold text-heading mb-3">For Nonprofits</h3>
+          <p class="text-body mb-4">Turn your next gala or fundraiser into the event of the year.</p>
+          <ul class="space-y-2 text-body mb-6">
+            <li class="flex gap-2"><span class="text-primary font-bold">&#10003;</span> Raise more with built-in donation moments</li>
+            <li class="flex gap-2"><span class="text-primary font-bold">&#10003;</span> Keep guests engaged all night long</li>
+            <li class="flex gap-2"><span class="text-primary font-bold">&#10003;</span> Brand every screen with your mission</li>
+            <li class="flex gap-2"><span class="text-primary font-bold">&#10003;</span> Works for galas, auctions, and community nights</li>
           </ul>
-          <a href="/contact" class="inline-block px-6 py-3 font-bold rounded-brand bg-deep-blue text-white hover:bg-deep-blue/90 transition-colors">
+          <a href="/contact" class="inline-block px-6 py-3 font-bold rounded-brand bg-primary text-white hover:bg-primary/90 transition-colors">
             Get Started
           </a>
         </div>
 
         <!-- Card: Corporate Events -->
-        <div class="bg-navy rounded-brand p-8 shadow-sm">
-          <div class="text-gold mb-4">
+        <div class="bg-primary rounded-brand p-8 shadow-sm text-white">
+          <div class="text-white/80 mb-4">
             <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
           </div>
           <h3 class="text-2xl font-bold text-white mb-3">For Corporate Events</h3>
-          <p class="text-white/60 mb-4">Team building that people actually want to show up for.</p>
-          <ul class="space-y-2 text-white/70 mb-6">
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Team building that actually works</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Works in-person, virtual, or hybrid</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Custom questions about your company</li>
-            <li class="flex gap-2"><span class="text-gold font-bold">&#10003;</span> Perfect for happy hours, retreats, and offsites</li>
+          <p class="text-white/70 mb-4">Team building that people actually want to show up for.</p>
+          <ul class="space-y-2 text-white/80 mb-6">
+            <li class="flex gap-2"><span class="text-white font-bold">&#10003;</span> Team building that actually works</li>
+            <li class="flex gap-2"><span class="text-white font-bold">&#10003;</span> Works in-person, virtual, or hybrid</li>
+            <li class="flex gap-2"><span class="text-white font-bold">&#10003;</span> Custom questions about your company</li>
+            <li class="flex gap-2"><span class="text-white font-bold">&#10003;</span> Perfect for happy hours, retreats, and offsites</li>
           </ul>
-          <a href="/contact" class="inline-block px-6 py-3 font-bold rounded-brand bg-gold text-navy hover:bg-gold/90 transition-colors">
+          <a href="/contact" class="inline-block px-6 py-3 font-bold rounded-brand bg-white text-primary hover:bg-white/90 transition-colors">
             Get Started
           </a>
         </div>
@@ -134,13 +134,13 @@ const stats = [
   <!-- Section 4: How It Works -->
   <section class="py-24 px-4 bg-white animate-on-scroll">
     <div class="max-w-7xl mx-auto">
-      <h2 class="text-4xl font-bold text-navy text-center mb-16">How It Works</h2>
+      <h2 class="text-4xl font-bold text-heading text-center mb-16">How It Works</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
         {steps.map(({ num, title, desc }) => (
           <div class="flex flex-col items-center text-center md:items-start md:text-left">
-            <div class="text-6xl font-bold text-gold/20 mb-4 select-none">{num}</div>
-            <h3 class="text-xl font-bold text-navy mb-2">{title}</h3>
-            <p class="text-navy/60">{desc}</p>
+            <div class="text-6xl font-bold text-accent-gold/20 mb-4 select-none">{num}</div>
+            <h3 class="text-xl font-bold text-heading mb-2">{title}</h3>
+            <p class="text-body">{desc}</p>
           </div>
         ))}
       </div>
@@ -148,14 +148,14 @@ const stats = [
   </section>
 
   <!-- Section 5: Social Proof (placeholder stats — replace with real data when available) -->
-  <section class="py-24 px-4 bg-deep-blue animate-on-scroll">
+  <section class="py-24 px-4 bg-surface-blue animate-on-scroll">
     <div class="max-w-5xl mx-auto text-center">
-      <h2 class="text-3xl font-bold text-white mb-16">Trusted by Event Organizers Everywhere</h2>
+      <h2 class="text-3xl font-bold text-heading mb-16">Trusted by Event Organizers Everywhere</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
         {stats.map(({ value, label }) => (
           <div>
-            <div class="text-5xl font-bold text-gold mb-2">{value}</div>
-            <div class="text-white/60 text-sm uppercase tracking-wide">{label}</div>
+            <div class="text-5xl font-bold text-primary mb-2">{value}</div>
+            <div class="text-body-light text-sm uppercase tracking-wide">{label}</div>
           </div>
         ))}
       </div>
@@ -163,15 +163,15 @@ const stats = [
   </section>
 
   <!-- Section 6: Final CTA -->
-  <section class="py-24 px-4 bg-navy animate-on-scroll">
+  <section class="py-24 px-4 bg-white animate-on-scroll">
     <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-4xl font-bold text-white mb-4">Ready to Rally?</h2>
-      <p class="text-xl text-white/70 mb-10">
+      <h2 class="text-4xl font-bold text-heading mb-4">Ready to Rally?</h2>
+      <p class="text-xl text-body mb-10">
         Let's talk about how Rally Trivia can make your next event one for the books.
       </p>
       <a
         href="/contact"
-        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-gold text-navy hover:bg-gold/90 transition-colors duration-200"
+        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
       >
         Request a Demo
       </a>

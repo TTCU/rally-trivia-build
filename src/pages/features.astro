@@ -1,119 +1,249 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const features = [
+const categories = [
   {
-    title: 'Customizable Trivia Rounds',
-    desc: 'Mix categories, difficulty levels, and formats to match your event theme and audience.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+    name: 'Live Game Experience',
+    features: [
+      {
+        title: 'Real-Time Team Play',
+        desc: 'Participants join instantly using a short event code — no app download required. Teams submit answers from any device with real-time feedback.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
+      },
+      {
+        title: 'Host-Controlled Show Flow',
+        desc: 'Manage the entire event from a dedicated console: start/stop rounds, control answer reveals, trigger breaks, and pace the show in real time.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
+      },
+      {
+        title: 'Live Scoreboard Display',
+        desc: 'A dedicated stage display shows live leaderboard rankings, team scores, and sponsor branding — designed for projection on large screens.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+      },
+      {
+        title: 'Answer Reveal Mode',
+        desc: 'Reveal correct answers one question at a time with dramatic progression — perfect for building suspense and audience engagement.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`,
+      },
+      {
+        title: 'Countdown Timers',
+        desc: 'Accessible, real-time countdown timers keep teams on track during timed rounds with visual and screen-reader-friendly announcements.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Real-Time Leaderboards',
-    desc: 'Live scoring keeps the energy high. Teams see exactly where they stand after every round.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+    name: 'Team Management',
+    features: [
+      {
+        title: 'Instant Join via QR Code',
+        desc: 'Teams scan a QR code or visit a short URL to join — no account creation needed. Credential sheets with team PINs can be printed for tables.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>`,
+      },
+      {
+        title: 'Captain & Participant Roles',
+        desc: 'Each team has a captain PIN for submitting final answers and participant PINs for collaboration. Role-based access ensures fair play.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
+      },
+      {
+        title: 'Team Presence Tracking',
+        desc: 'See which teams are active, idle, or offline in real time. Helps hosts identify teams that may need assistance during the event.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Play on Any Device',
-    desc: 'Guests join from their phones — no app download needed. Just scan, tap, and play.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
+    name: 'Judging & Scoring',
+    features: [
+      {
+        title: 'Judge Dashboard',
+        desc: 'Judges review and score submissions through a dedicated portal with keyboard shortcuts for rapid adjudication and batch scoring.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`,
+      },
+      {
+        title: 'Five Tie-Breaking Strategies',
+        desc: 'Configurable tie-breaking rules: shared rank, speed-based, registration order, round-by-round comparison, or combined strategies with fallback chains.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>`,
+      },
+      {
+        title: 'Immutable Scoring',
+        desc: 'Once submissions are locked and adjudicated, scores are final. Every scoring decision is logged to an immutable audit trail for transparency.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+      },
+      {
+        title: 'Partial Credit Support',
+        desc: 'Questions can be scored as correct, incorrect, or partial credit, giving judges flexibility for nuanced answers.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Custom Branding & Themes',
-    desc: 'Your logo, your colors, your event. Every screen reflects your organization\'s brand.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>`,
+    name: 'Event Creation & Content',
+    features: [
+      {
+        title: 'AI Question Generation',
+        desc: 'Generate trivia questions using AI with customizable topics, difficulty levels, and question counts. AI questions go through a review workflow before use.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>`,
+      },
+      {
+        title: 'Fact-Check Verification',
+        desc: 'AI-generated questions pass through a Chain-of-Verification pipeline that checks answers for accuracy with supporting evidence.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`,
+      },
+      {
+        title: 'Reusable Question Bank',
+        desc: 'Build a library of vetted questions with full-text search, tags, difficulty ratings, and usage tracking. Import via CSV or create manually.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>`,
+      },
+      {
+        title: 'Event Templates',
+        desc: 'Save any event configuration as a reusable template. Clone events with pre-configured rounds, questions, scoring rules, and theme settings.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>`,
+      },
+      {
+        title: 'Multiple Question Types',
+        desc: 'Support for text-entry and multiple-choice questions with configurable point values per question.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Built-In Fundraising Tools',
-    desc: 'Donation prompts, pledge rounds, and giving moments woven naturally into the game flow.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    name: 'Branding & Customization',
+    features: [
+      {
+        title: 'Theme Studio',
+        desc: 'Customize your event with color pickers, logo uploads, and five built-in presets. WCAG contrast checking ensures readability on stage displays.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>`,
+      },
+      {
+        title: 'Sponsor Management',
+        desc: 'Showcase event sponsors with tiered display (Platinum, Gold, Silver, Bronze). Sponsors appear in a weighted carousel on the scoreboard.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>`,
+      },
+      {
+        title: 'Sponsor Ticker',
+        desc: 'A scrolling chyron-style ticker displays sponsor names and messages on the scoreboard — configurable by the host in real time.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>`,
+      },
+      {
+        title: 'Custom Domain Support',
+        desc: 'Run your trivia platform on your own domain with HTTPS, custom subdomains for each portal, and automatic SSL certificate provisioning.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Live Host Dashboard',
-    desc: 'Control the pace, reveal answers, and manage rounds from a single, intuitive host screen.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
+    name: 'Administration',
+    features: [
+      {
+        title: 'Event Lifecycle Management',
+        desc: 'Full control over event states: draft, open for registration, in progress, completed, or cancelled. Round-level controls for answers and reveals.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`,
+      },
+      {
+        title: 'Analytics Dashboard',
+        desc: 'Post-event analytics including question difficulty analysis, round averages, judging latency metrics, and team performance breakdowns.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+      },
+      {
+        title: 'Report Export',
+        desc: 'Export event results, analytics, and audit trails as CSV or formatted HTML reports for stakeholders and record-keeping.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+      },
+      {
+        title: 'Audit Trail',
+        desc: 'Every action — team joins, submissions, judge decisions, score changes — is recorded in an immutable audit log with timestamps.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+      },
+      {
+        title: 'Anti-Cheating Detection',
+        desc: 'Automated integrity monitoring using text similarity analysis, typing pattern detection, and device fingerprinting for fair play.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12 9v2m0 4h.01"/></svg>`,
+      },
+    ],
   },
   {
-    title: 'Multimedia Questions',
-    desc: 'Go beyond text. Add images, audio clips, and video to make rounds more dynamic and fun.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
-  },
-  {
-    title: 'Team Management',
-    desc: 'Automatic team creation, custom team names, and roster management for events of any size.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
-  },
-  {
-    title: 'Engagement Analytics',
-    desc: 'See how your audience participated — response rates, popular rounds, and donation breakdowns.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
-  },
-  {
-    title: 'Custom Question Banks',
-    desc: 'Build your own questions or choose from our curated library. Mix and match to fit any theme.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>`,
-  },
-  {
-    title: 'Event Scheduling',
-    desc: 'Plan ahead with scheduling tools. Set up your event timeline, rounds, and breaks in advance.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
-  },
-  {
-    title: 'Works Anywhere',
-    desc: 'In-person, virtual, or hybrid — Rally Trivia adapts to your event format seamlessly.',
-    icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    name: 'Technical Platform',
+    features: [
+      {
+        title: 'Cross-Platform Access',
+        desc: 'Play from any device with a web browser. Native iOS and Android apps available for an enhanced mobile experience with deep linking.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
+      },
+      {
+        title: 'Adaptive Polling',
+        desc: 'Clients automatically adjust polling frequency based on game state — faster during active rounds, slower during breaks — reducing server load.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
+      },
+      {
+        title: 'Real-Time Monitoring',
+        desc: 'Built-in observability dashboard showing P50/P95 response times, cold start metrics, and resource utilization for production reliability.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+      },
+      {
+        title: 'Scalable Cloud Infrastructure',
+        desc: 'Built on Azure with serverless compute, managed database, and global CDN. Handles hundreds of concurrent participants without degradation.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>`,
+      },
+      {
+        title: 'Role-Based Authentication',
+        desc: 'Microsoft Entra ID authentication for admins, judges, and hosts with granular RBAC. Participant auth via short-lived JWT tokens.',
+        icon: `<svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>`,
+      },
+    ],
   },
 ];
 ---
 
-<BaseLayout title="Features — Rally Trivia" description="Explore Rally Trivia's full suite of live trivia tools: real-time leaderboards, custom branding, fundraising integrations, multimedia questions, and more.">
+<BaseLayout title="Features — Rally Trivia" description="Explore Rally Trivia's full suite of live trivia tools: real-time gameplay, team management, AI question generation, custom branding, analytics, and more.">
 
   <!-- Hero -->
-  <section class="py-32 md:py-40 bg-navy px-4 animate-on-scroll">
+  <section class="py-32 md:py-40 bg-surface-blue px-4 animate-on-scroll">
     <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
-        Everything You Need to Run <span class="text-gold">Amazing</span> Trivia Events
+      <h1 class="text-4xl md:text-6xl font-bold text-heading leading-tight mb-6">
+        Everything You Need to Run <span class="text-primary">Amazing</span> Trivia Events
       </h1>
-      <p class="text-xl text-white/70 max-w-2xl mx-auto mb-10">
-        A complete platform for creating, hosting, and managing live trivia — from question banks to real-time scoring.
+      <p class="text-xl text-body max-w-2xl mx-auto mb-10">
+        A complete platform for creating, hosting, and managing live trivia — from AI question generation to real-time scoring.
       </p>
       <a
         href="/contact"
-        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-gold text-navy hover:bg-gold/90 transition-colors duration-200"
+        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
       >
         Request a Demo
       </a>
     </div>
   </section>
 
-  <!-- Feature Grid -->
-  <section class="py-24 px-4 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto">
-      <h2 class="text-4xl font-bold text-navy text-center mb-4">Platform Features</h2>
-      <p class="text-lg text-navy/60 text-center max-w-2xl mx-auto mb-16">
-        Every tool you need to create trivia experiences your guests will love.
-      </p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {features.map(({ title, desc, icon }) => (
-          <div class="bg-slate-50 rounded-brand p-6 border border-navy/5 hover:border-electric-blue/30 transition-colors">
-            <div class="text-electric-blue mb-4 w-8 h-8" set:html={icon} />
-            <h3 class="text-lg font-bold text-navy mb-2">{title}</h3>
-            <p class="text-navy/60 text-sm">{desc}</p>
-          </div>
-        ))}
+  <!-- Feature Categories -->
+  {categories.map(({ name, features }, i) => (
+    <section class={`py-24 px-4 ${i % 2 === 0 ? 'bg-white' : 'bg-surface'} animate-on-scroll`}>
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold text-heading text-center mb-4">{name}</h2>
+        <div class="w-16 h-1 bg-primary mx-auto mb-12 rounded-full"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map(({ title, desc, icon }) => (
+            <div class="bg-white rounded-brand p-6 border border-border hover:border-primary/30 hover:shadow-sm transition-all">
+              <div class="text-primary mb-4 w-8 h-8" set:html={icon} />
+              <h3 class="text-lg font-bold text-heading mb-2">{title}</h3>
+              <p class="text-body text-sm">{desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  ))}
 
   <!-- Bottom CTA -->
-  <section class="py-24 px-4 bg-navy animate-on-scroll">
+  <section class="py-24 px-4 bg-white animate-on-scroll">
     <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-4xl font-bold text-white mb-4">See It in Action</h2>
-      <p class="text-xl text-white/70 mb-10">
+      <h2 class="text-4xl font-bold text-heading mb-4">See It in Action</h2>
+      <p class="text-xl text-body mb-10">
         The best way to understand Rally Trivia is to experience it. Let us show you what's possible.
       </p>
       <a
         href="/contact"
-        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-gold text-navy hover:bg-gold/90 transition-colors duration-200"
+        class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
       >
         Request a Demo
       </a>
