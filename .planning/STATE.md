@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Visitors understand what Rally Trivia does and request a demo — every page funnels toward that conversion.
-**Current focus:** Phase 4 — Worker Foundation
+**Current focus:** Phase 5 — Form Backend
 
 ## Current Position
 
-Phase: 4 of 7 (Worker Foundation)
-Plan: 2 of 2 in current phase (phase complete)
+Phase: 5 of 7 (Form Backend)
+Plan: 1 of 1 in current phase (phase complete)
 Status: In progress
-Last activity: 2026-02-22 — 04-02 Resend secret and DNS verification complete
+Last activity: 2026-02-23 — 05-01 Form-to-email pipeline complete with Turnstile spam protection
 
-Progress: [████░░░░░░] 45% (3/3 v1.0 phases complete; Phase 4 Plans 1-2 done)
+Progress: [█████░░░░░] 55% (3/3 v1.0 phases complete; Phase 4 Plans 1-2 done; Phase 5 Plan 1 done)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5 (v1.0)
+- Total plans completed: 6 (v1.0)
 - Average duration: unknown
 - Total execution time: unknown
 
@@ -30,6 +30,7 @@ Progress: [████░░░░░░] 45% (3/3 v1.0 phases complete; Phase 
 | 1. Infrastructure | 2 | - | - |
 | 2. Content Pages | 2 | - | - |
 | 3. Contact Form | 1 | - | - |
+| 5. Form Backend | 1 | ~5 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -50,6 +51,10 @@ Recent decisions affecting current work:
 - 04-02: Resend sending domain contact@rallytrivia.com — confirmed From address for demo request emails
 - 04-02: Resend DNS records must be DNS Only (grey cloud) — proxying breaks DKIM verification
 - 04-02: Wrangler secrets for production credentials — never in source code or git history; .dev.vars for local dev (gitignored)
+- 05-01: Turnstile always-passes test key in .dev.vars — no real dashboard setup needed for local dev
+- 05-01: Error branch preserves form inputs and resets Turnstile for retry — no separate Try Again button
+- 05-01: Thank-you text changed to "We'll be in touch soon." — removes implied SLA commitment
+- 05-01: 900ms minimum loading time via Promise.all — prevents flash of loading state on fast connections
 
 ### Pending Todos
 
@@ -59,11 +64,12 @@ None yet.
 
 - ~~Phase 4: Confirm whether rallytrivia.com is already added in Resend dashboard~~ — resolved, domain verified 2026-02-22
 - ~~Phase 4: Confirm actual recipient email address for demo requests~~ — resolved, contact@rallytrivia.com confirmed
-- Phase 5: Verify exact field IDs in ContactForm.astro before writing Worker field extraction logic
+- ~~Phase 5: Verify exact field IDs in ContactForm.astro before writing Worker field extraction logic~~ — resolved, field names confirmed (Name, Email, Organization, Event Type, Message)
+- **Phase 5 production:** Wrangler secrets TURNSTILE_SECRET_KEY and RECIPIENT_EMAIL must be set before deployment; PUBLIC_TURNSTILE_SITE_KEY must be updated from test key to real key
 - Phase 7: Real team photos must be available before Phase 7 can execute — content readiness gates this phase
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 04-02-PLAN.md — Resend secret stored, rallytrivia.com DNS verified
+Last session: 2026-02-23
+Stopped at: Completed 05-01-PLAN.md — Form-to-email pipeline complete with Resend SDK + Turnstile
 Resume file: None

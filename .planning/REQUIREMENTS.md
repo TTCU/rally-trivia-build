@@ -9,9 +9,9 @@ Requirements for Production Polish milestone. Each maps to roadmap phases.
 
 ### Form Backend
 
-- [ ] **FORM-01**: Contact form submissions are delivered via email to a single configurable recipient
+- [x] **FORM-01**: Contact form submissions are delivered via email to a single configurable recipient
 - [x] **FORM-02**: Worker handles POST `/api/contact` and sends email via Resend API
-- [ ] **FORM-03**: Form UI shows loading state during submission and success/error state after
+- [x] **FORM-03**: Form UI shows loading state during submission and success/error state after
 - [x] **FORM-04**: Resend API key is stored as a Cloudflare Workers secret (not in code)
 
 ### Analytics
@@ -56,9 +56,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FORM-01 | Phase 5 | Pending |
+| FORM-01 | Phase 5 | Complete |
 | FORM-02 | Phase 4 | Complete |
-| FORM-03 | Phase 5 | Pending |
+| FORM-03 | Phase 5 | Complete |
 | FORM-04 | Phase 4 | Complete |
 | ANLX-01 | Phase 6 | Pending |
 | ANLX-02 | Phase 6 | Pending |
