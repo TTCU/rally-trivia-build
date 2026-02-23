@@ -64,11 +64,16 @@ async function verifyTurnstile(token: string, secretKey: string): Promise<boolea
   return outcome.success;
 }
 
-const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': 'http://localhost:4321',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+function getCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get('Origin') || '';
+  const allowed = ['http://localhost:4321', 'https://rallytrivia.com', 'https://www.rallytrivia.com'];
+  const allowOrigin = allowed.includes(origin) ? origin : allowed[0];
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -76,7 +81,7 @@ export default {
 
     // Handle CORS preflight for /api/contact
     if (url.pathname === '/api/contact' && request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, { status: 204, headers: getCorsHeaders(request) });
     }
 
     if (url.pathname === '/api/contact' && request.method === 'POST') {
@@ -92,7 +97,7 @@ export default {
         if (!tokenValid) {
           return Response.json(
             { ok: false, message: 'Verification failed. Please try again.' },
-            { status: 400, headers: corsHeaders }
+            { status: 400, headers: getCorsHeaders(request) }
           );
         }
 
@@ -109,16 +114,16 @@ export default {
           console.error('Resend error:', error);
           return Response.json(
             { ok: false, message: 'Something went wrong. Please try again.' },
-            { status: 500, headers: corsHeaders }
+            { status: 500, headers: getCorsHeaders(request) }
           );
         }
 
-        return Response.json({ ok: true }, { headers: corsHeaders });
+        return Response.json({ ok: true }, { headers: getCorsHeaders(request) });
       } catch (err) {
         console.error('Unexpected error:', err);
         return Response.json(
           { ok: false, message: 'Something went wrong. Please try again.' },
-          { status: 500, headers: corsHeaders }
+          { status: 500, headers: getCorsHeaders(request) }
         );
       }
     }
