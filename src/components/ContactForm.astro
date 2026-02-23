@@ -1,7 +1,9 @@
 ---
 // ContactForm: Demo request form with blur validation, email typo detection,
-// simulated submit loading state, and animated thank-you transition.
+// real API submission with loading state, Turnstile spam protection,
+// and animated thank-you transition.
 // Self-contained — all HTML and client-side logic in this component.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <div>
@@ -103,6 +105,9 @@
       ></textarea>
     </div>
 
+    <!-- Turnstile Widget -->
+    <div class="cf-turnstile mb-6" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+
     <!-- Submit Button -->
     <button
       type="submit"
@@ -130,7 +135,7 @@
     </div>
     <h2 class="text-4xl font-bold text-heading mb-4">Thank You!</h2>
     <p class="text-lg text-body mb-2">Your demo request has been received.</p>
-    <p class="text-body-light mb-10">We'll reach out within 24 hours.</p>
+    <p class="text-body-light mb-10">We'll be in touch soon.</p>
     <a
       href="/"
       class="inline-block px-8 py-4 text-lg font-bold rounded-brand bg-heading text-white hover:bg-heading/90 transition-colors duration-200"
@@ -140,7 +145,18 @@
   </div>
 </div>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+
 <script>
+  declare global {
+    interface Window {
+      turnstile?: {
+        reset: () => void;
+        render: (container: string | Element, options: object) => string;
+      };
+    }
+  }
+
   // Email typo detection map
   const TYPO_MAP: Record<string, string> = {
     'gmial.com': 'gmail.com',
@@ -263,6 +279,8 @@
   // Initialize form
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const thankYou = document.getElementById('thank-you')!;
+  const errorSummary = document.getElementById('error-summary')!;
+  const errorList = document.getElementById('error-list')!;
 
   if (form) {
     // Blur validation on all fields
@@ -282,15 +300,81 @@
       const btnText = btn.querySelector('.btn-text')!;
       const btnSpinner = btn.querySelector('.btn-spinner')!;
 
+      // Collect form data
+      const formData = new FormData(form);
+
+      // Check Turnstile token is ready
+      const turnstileToken = formData.get('cf-turnstile-response') as string | null;
+      if (!turnstileToken) {
+        errorList.innerHTML = '<li>Please wait a moment and try again.</li>';
+        errorSummary.classList.remove('hidden');
+        errorSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
       // Show loading state
       btn.disabled = true;
       btnText.classList.add('hidden');
       btnSpinner.classList.remove('hidden');
 
-      // Simulated submit delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Submit to API with minimum loading time
+      const MIN_LOADING_MS = 900;
+      let response: Response;
 
-      // Animate transition
+      try {
+        const [res] = await Promise.all([
+          fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              Name: formData.get('Name'),
+              Email: formData.get('Email'),
+              Organization: formData.get('Organization'),
+              'Event Type': formData.get('Event Type'),
+              Message: formData.get('Message'),
+              turnstileToken: turnstileToken,
+            }),
+          }),
+          new Promise<void>((resolve) => setTimeout(resolve, MIN_LOADING_MS)),
+        ]);
+        response = res;
+      } catch {
+        // Network error
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+        errorList.innerHTML = '<li>Something went wrong. Please try again.</li>';
+        errorSummary.classList.remove('hidden');
+        errorSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (window.turnstile) window.turnstile.reset();
+        return;
+      }
+
+      // Parse response
+      let result: { ok: boolean; message?: string };
+      try {
+        result = await response.json();
+      } catch {
+        result = { ok: false, message: 'Something went wrong. Please try again.' };
+      }
+
+      // Error branch
+      if (!response.ok || !result.ok) {
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+        const message = result.message || 'Something went wrong. Please try again.';
+        const li = document.createElement('li');
+        li.textContent = message;
+        errorList.innerHTML = '';
+        errorList.appendChild(li);
+        errorSummary.classList.remove('hidden');
+        errorSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (window.turnstile) window.turnstile.reset();
+        return;
+      }
+
+      // Success branch — animate transition to thank-you
       const { animate } = await import('motion');
 
       // Fade out form wrapper (includes error summary + form)
@@ -299,7 +383,7 @@
 
       // Hide form elements, show thank-you
       form.classList.add('hidden');
-      document.getElementById('error-summary')!.classList.add('hidden');
+      errorSummary.classList.add('hidden');
       thankYou.classList.remove('hidden');
 
       // Scroll to top

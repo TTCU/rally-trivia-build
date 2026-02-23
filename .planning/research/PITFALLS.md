@@ -1,328 +1,436 @@
 # Pitfalls Research
 
-**Domain:** Astro marketing site on Cloudflare Workers
+**Domain:** Astro marketing site on Cloudflare Workers — v1.1 feature additions
 **Researched:** 2026-02-22
-**Confidence:** MEDIUM-HIGH (Cloudflare deployment pitfalls: HIGH from official docs; SEO/performance pitfalls: MEDIUM from multiple verified sources)
+**Confidence:** HIGH for Resend/Cloudflare integration (official docs verified); HIGH for analytics injection (multiple community reports + official docs); MEDIUM for UX/content pitfalls (multi-source verified)
 
 ---
 
-## Critical Pitfalls
+## Milestone Context: v1.1 Additions
 
-### Pitfall 1: Wrong Output Mode — Deploying SSR When Static Is Correct
+This document covers pitfalls specific to adding these four features to the existing, working static site:
 
-**What goes wrong:**
-The `@astrojs/cloudflare` adapter defaults to `output: 'server'`, which server-renders every page on-demand as a Cloudflare Worker invocation. A pure marketing site like Rally Trivia has zero dynamic data — every page can (and should) be pre-rendered at build time as static HTML. Defaulting to SSR adds latency, consumes Worker CPU quota, and complicates deployment for zero benefit.
+1. **Form backend** — Resend API via a new Astro server endpoint on Cloudflare Workers
+2. **Cloudflare Web Analytics** — Beacon script injection into existing pages
+3. **Social proof rework** — Replacing hardcoded placeholder stats with qualitative copy
+4. **Real team section** — Replacing placeholder team members with real names, titles, and photos
 
-**Why it happens:**
-Developers install `@astrojs/cloudflare` and accept defaults, not realizing the adapter default assumes SSR. The Cloudflare adapter documentation focuses heavily on SSR use cases.
-
-**How to avoid:**
-For a fully static marketing site, there are two valid paths:
-- Option A (simplest): Do NOT install `@astrojs/cloudflare` — use `output: 'static'` (Astro default) and deploy the `dist/` folder directly to Cloudflare Pages as pure static assets.
-- Option B (Workers with static assets): Install the adapter, set `output: 'static'` in `astro.config.mjs`, configure `wrangler.jsonc` with `"assets": { "directory": "./dist" }` only — no `main` field needed for static output.
-
-If a contact form will eventually post to a Cloudflare Worker function, use `output: 'hybrid'` and mark static pages with `export const prerender = true`.
-
-**Warning signs:**
-- Every page load appearing in Cloudflare Workers analytics (should be zero for static pages)
-- Build output includes `_worker.js` when you expected only HTML/CSS/JS files
-- Slower TTFB than expected for a "static" site
-
-**Phase to address:** Project setup / Phase 1 (Infrastructure setup)
+The v1.0 pitfalls (output mode, Tailwind v4, image CLS, etc.) are preserved below for completeness but the **critical pitfalls for v1.1 are listed first**.
 
 ---
 
-### Pitfall 2: Missing or Misconfigured `wrangler.jsonc` for Static Assets
+## Critical Pitfalls — v1.1 Feature Additions
+
+### Pitfall 1: Adding a Server Endpoint Requires the Cloudflare Adapter — The Existing wrangler.jsonc Is Insufficient
 
 **What goes wrong:**
-Deploying Astro to Cloudflare Workers without the correct `wrangler.jsonc` structure causes deployment failures or assets not being served. The required fields differ significantly between static output (assets-only) and SSR (Worker + assets). Mixing up the config between these modes produces cryptic errors like "Could not resolve XXXX" or 404s on all asset routes.
+The current deployment is pure static assets (`wrangler.jsonc` has only `assets.directory`, no `main` field). When you add a server endpoint (`src/pages/api/submit.ts` with `export const prerender = false`), Astro needs the `@astrojs/cloudflare` adapter installed to compile the endpoint into a `_worker.js`. Without the adapter, `npm run build` either errors or silently omits the endpoint. The form posts to `/api/submit` and gets a 404 in production.
 
 **Why it happens:**
-The Cloudflare Workers and Pages deployment paths are different, and the Workers static assets feature (announced 2025) introduced new configuration patterns. Community tutorials written for Pages don't apply 1:1 to Workers.
+The existing static site works without an adapter — Astro's default `output: 'static'` pre-renders everything. Developers add an API file expecting it to "just work," not realizing the Cloudflare runtime worker compilation step is entirely gated behind the adapter.
 
 **How to avoid:**
-For static output on Workers, use this minimal `wrangler.jsonc`:
+Run `npx astro add cloudflare` before writing any endpoint code. This command:
+- Installs `@astrojs/cloudflare`
+- Updates `astro.config.mjs` with the adapter
+- Rewrites `wrangler.jsonc` to add `"main": "dist/_worker.js/index.js"` and the required `compatibility_flags`
+
+After adding the adapter, explicitly mark all existing pages with `export const prerender = true` OR confirm that the project `output` remains `'static'` (Astro 5's default behavior: `prerender = false` on any single file triggers Worker compilation only for that file while static pages remain pre-rendered).
+
+Verify the correct `wrangler.jsonc` structure after adapter install:
 ```jsonc
 {
-  "name": "rally-trivia-web",
-  "compatibility_date": "2025-01-01",
+  "name": "rally-trivia-build",
+  "compatibility_date": "2025-10-08",
+  "main": "dist/_worker.js/index.js",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist"
   }
 }
 ```
-For SSR/hybrid with Worker function, add:
-```jsonc
-{
-  "main": "dist/_worker.js/index.js",
-  "compatibility_flags": ["nodejs_compat"]
-}
-```
-Run `astro add cloudflare` — it scaffolds the correct `wrangler.jsonc` and `public/.assetsignore` automatically.
 
 **Warning signs:**
-- `wrangler deploy` succeeds but all routes return 404
-- Build output directory mismatch with `assets.directory`
-- Missing `.assetsignore` in `public/` folder (causes `_routes.json` to deploy and interfere with routing)
+- `npm run build` output has no `_worker.js` directory when an API endpoint exists
+- POST to `/api/submit` returns 404 in production but works locally with `npm run dev`
+- `wrangler deploy` succeeds but form submissions fail silently
+- No `@astrojs/cloudflare` in `package.json` dependencies
 
-**Phase to address:** Phase 1 (Infrastructure setup)
+**Phase to address:** Form backend phase — before writing any endpoint code
 
 ---
 
-### Pitfall 3: Lazy-Loading the Hero/LCP Image
+### Pitfall 2: Resend "From" Address Requires a Verified Domain — `onboarding@resend.dev` Is Test-Only
 
 **What goes wrong:**
-Astro's `<Image>` component adds `loading="lazy"` by default. On a marketing site, the hero image is almost always the Largest Contentful Paint (LCP) element. Lazy-loading it tells the browser to defer fetching it — directly hurting the LCP score and causing visitors to perceive the site as slow. Real-world impact: LCP can go from 1.3s (good) to 4.8s+ (poor) from this single mistake.
+Resend's free tier restricts the `from` address to `onboarding@resend.dev` until a custom domain is verified. Developers test locally with this address, the emails arrive, and they ship to production — only to discover that all production emails still arrive "from" Resend's sandbox address, appear suspicious to recipients, or (if using a real `from` address pre-verification) are rejected entirely with a 403 validation error. This is a blocking issue if domain verification is skipped.
 
 **Why it happens:**
-Developers copy the same `<Image>` usage pattern across all images without distinguishing above-the-fold from below-the-fold content. Lazy loading sounds universally good — it is not.
+The Resend onboarding flow makes it easy to generate an API key and send test emails without verifying a domain. The sandbox restriction is not enforced until sending to addresses other than your own verified account email.
 
 **How to avoid:**
-For the hero image (and any above-the-fold image), explicitly set `loading="eager"` and `fetchpriority="high"`:
-```astro
-<Image
-  src={heroImage}
-  alt="Rally Trivia event"
-  loading="eager"
-  fetchpriority="high"
-  width={1200}
-  height={600}
-/>
-```
-Use `loading="lazy"` only for images below the fold (features section, testimonials, etc.).
+Before writing any application code:
+1. Log into Resend dashboard → Domains → Add Domain
+2. Add the sending domain (e.g., `rallytrivia.com` or a subdomain like `mail.rallytrivia.com`)
+3. Add the required DNS records in Cloudflare:
+   - MX record for `send` subdomain
+   - TXT SPF record for `send` subdomain
+   - TXT DKIM record for `resend._domainkey` — **set Cloudflare Proxy Status to "DNS Only" (grey cloud) for DKIM records**
+4. Wait for DNS propagation (typically 5-15 minutes with Cloudflare)
+5. Confirm green verification status in Resend dashboard before writing code
+
+Use `sending_access` scope (not `full_access`) for the API key used in production.
 
 **Warning signs:**
-- Lighthouse flags "Largest Contentful Paint image was lazily loaded"
-- PageSpeed Insights LCP score is poor despite fast hosting
-- Hero image visually appears to "pop in" after the page already looks loaded
+- Resend API returns `403` with message about unverified domain
+- Test emails work but "from" shows `onboarding@resend.dev` in production
+- DKIM record shows "pending" because it was added with orange cloud proxy
+- DNS records added but Resend shows "not verified" — check for orange cloud on DKIM
 
-**Phase to address:** Phase 2 (Landing page build) — set the pattern correctly from day one
+**Phase to address:** Form backend phase — Day 1, before any code is written
 
 ---
 
-### Pitfall 4: Cloudflare Auto Minify Breaking Client-Side Hydration
+### Pitfall 3: Resend API Key Exposed via Client-Side Code or Committed to Repository
 
 **What goes wrong:**
-Cloudflare's "Auto Minify" feature (HTML/CSS/JS minification via the Cloudflare dashboard) rewrites script and style content in ways that cause Astro's hydration to mismatch the server-rendered HTML. Symptoms: interactive components fail silently, or console shows "Hydration completed but contains mismatches."
+The Resend API key is placed in a `.env` file, committed to the repository, or worse — embedded in client-side JavaScript that gets shipped in the static bundle. Any of these means the key is compromised. With a full-access key, an attacker can send unlimited email from your domain, ruining deliverability reputation.
 
 **Why it happens:**
-Cloudflare modifies the HTML after Astro has rendered it, breaking the checksum Astro uses to match server output with client-side hydration. This is a Cloudflare infrastructure setting that's enabled by default on many accounts.
+Developers accustomed to client-side fetch calls try to call the Resend API directly from the browser (which also fails due to CORS). Others add the key to `.env` and forget to add `.env` to `.gitignore`. Some place it in `astro.config.mjs` constants thinking it will only be server-side.
 
 **How to avoid:**
-Disable Cloudflare Auto Minify in the Cloudflare dashboard under Speed > Optimization > Content Optimization. Astro's build already minifies output — double-minification via Cloudflare only causes problems. Do this before any QA testing.
+- Store the key as a Cloudflare Workers secret: `npx wrangler secret put RESEND_API_KEY`
+- Access it only via `context.locals.runtime.env.RESEND_API_KEY` in the server endpoint
+- Never reference it in any `.astro` component or client-side `<script>` tag
+- Confirm `.env` is in `.gitignore` before first commit containing any secrets
+- For local dev, use `.dev.vars` (Cloudflare's local secret file, also gitignored):
+  ```
+  RESEND_API_KEY=re_xxxxxxxxxxxx
+  ```
+- Use `sending_access` permission scope on the production API key (not `full_access`)
 
 **Warning signs:**
-- Interactive Astro islands (client:load, client:visible) fail to initialize
-- Browser console shows "Hydration completed but contains mismatches"
-- Works in local dev but breaks in production
+- `RESEND_API_KEY` appears in `git log` or `git diff` output
+- Key visible in browser DevTools Network tab
+- Resend API errors logged to client console instead of server logs
+- CORS errors when calling Resend from browser — means the call is happening client-side
 
-**Phase to address:** Phase 1 (Infrastructure setup) — disable Auto Minify immediately after DNS/deployment setup
+**Phase to address:** Form backend phase — security review before first deployment
 
 ---
 
-### Pitfall 5: Missing `site` Property in `astro.config.mjs` — Breaks Sitemap and Canonical URLs
+### Pitfall 4: Form Endpoint CORS Errors Are Misleading — The Real Error Is Often in the Worker
 
 **What goes wrong:**
-The Astro sitemap integration requires the `site` property to be set in `astro.config.mjs`. Without it, `@astrojs/sitemap` either fails silently or generates relative URLs (which are invalid in sitemaps). Canonical tags also require absolute URLs to be meaningful for SEO. A marketing site without a valid sitemap takes much longer to get indexed.
+When the Cloudflare Worker endpoint throws any unhandled error (Resend key missing, malformed request, DNS/module import failure), Cloudflare returns a 500 with no CORS headers on the error response. The browser sees this as a CORS error and logs "has been blocked by CORS policy" — completely obscuring the actual error. Developers spend hours debugging CORS configuration when the real issue is an environment variable not being set.
 
 **Why it happens:**
-The `site` property is optional for most Astro features, so it's easy to overlook during setup. Developers see the build succeed and assume everything is correct.
+CORS headers are added by the endpoint handler. If the handler throws before reaching the response, no CORS headers are added. The browser's CORS error message is technically accurate but deeply misleading about root cause.
 
 **How to avoid:**
-Set `site` as the first thing in `astro.config.mjs`:
-```js
-export default defineConfig({
-  site: 'https://rallytrivia.com',  // exact production URL, no trailing slash
-  integrations: [sitemap()],
+- Wrap the entire endpoint handler body in a `try/catch`
+- Return error responses that include CORS headers even on failure:
+  ```typescript
+  export const POST: APIRoute = async ({ request }) => {
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': 'https://rallytrivia.com',
+      'Content-Type': 'application/json',
+    };
+    try {
+      // ... handler logic
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+  };
+  ```
+- Use `wrangler tail` to see real-time Worker logs in production: `npx wrangler tail`
+- In local dev, check the terminal running `npm run dev` — Worker errors appear there, not in browser console
+
+**Warning signs:**
+- Browser console shows CORS error but local dev shows a different error
+- Form works in `npm run dev` but fails in production after `wrangler deploy`
+- No error logged in Cloudflare Workers dashboard but CORS errors appear in browser
+
+**Phase to address:** Form backend phase — implement error handling before first end-to-end test
+
+---
+
+### Pitfall 5: Existing ContactForm Simulates Success — Must Wire Actual Fetch Call
+
+**What goes wrong:**
+The existing `ContactForm.astro` component has a simulated 1500ms delay and then shows a success state — it never posts to any endpoint. When the real backend is added, the form needs the `fetch` call added, success/failure branching added, and the simulated delay removed. Developers add the backend endpoint but forget to update the client-side submit handler, leaving the form permanently in "fake success" mode in production.
+
+**Why it happens:**
+The endpoint and the form component are separate files. It's easy to add `src/pages/api/submit.ts` and assume the form will automatically use it. The simulated submit logic in `ContactForm.astro`'s `<script>` tag must be replaced.
+
+**How to avoid:**
+Update the form's submit handler to replace the `setTimeout` simulation with a real `fetch`:
+```typescript
+// Replace the simulated delay with:
+const formData = new FormData(form);
+const response = await fetch('/api/submit', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(Object.fromEntries(formData)),
 });
+
+if (!response.ok) {
+  // Show error state — do NOT show thank-you
+  throw new Error(`Submission failed: ${response.status}`);
+}
+// Only now show thank-you state
 ```
-Also add `robots.txt` in `public/` pointing to the sitemap:
-```
-User-agent: *
-Allow: /
-Sitemap: https://rallytrivia.com/sitemap-index.xml
-```
+Add an error state to the form UI (the existing component has no error path after submit — it only has validation errors and the thank-you state).
 
 **Warning signs:**
-- `dist/sitemap-index.xml` is missing after build
-- Sitemap contains relative paths (e.g., `/about` instead of `https://rallytrivia.com/about`)
-- Google Search Console shows no sitemap submitted or sitemap errors
+- Form shows "Thank you" even when the API endpoint returns 500
+- No network request visible in DevTools when form is submitted
+- Form works locally against no backend (the simulation still runs)
 
-**Phase to address:** Phase 1 (Infrastructure) — set `site` before any content pages are built
+**Phase to address:** Form backend phase — wire form and endpoint together as a single task
+
+---
+
+### Pitfall 6: Cloudflare Web Analytics Auto-Inject Is Unreliable on Workers — Use Manual Script
+
+**What goes wrong:**
+Cloudflare's "automatic" Web Analytics injection (enabled via the dashboard toggle) fails intermittently on Workers-served sites. Community reports confirm the auto-inject does not fire consistently after Workers deployments. The dashboard shows analytics "enabled" but data never appears. The issue is compounded by `Cache-Control: public, no-transform` headers, which prevent Cloudflare's edge from modifying the HTML payload to inject the beacon.
+
+**Why it happens:**
+Auto-inject works by Cloudflare modifying HTML responses at the edge. Workers serving static assets may return headers that block this modification. The feature was designed primarily for proxied origin servers, not Workers-hosted static assets.
+
+**How to avoid:**
+Skip auto-inject entirely. Use the manual beacon script:
+1. In Cloudflare dashboard → Web Analytics → Add a site → choose "JS Snippet" installation
+2. Copy the `<script>` snippet provided (it includes your site-specific token)
+3. Add it to `BaseHead.astro` before the closing `</head>` tag:
+   ```html
+   <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+     data-cf-beacon='{"token": "YOUR_TOKEN_HERE"}'></script>
+   ```
+4. Rebuild and deploy — analytics data should appear in the dashboard within minutes
+
+The `defer` attribute prevents the beacon from blocking page rendering.
+
+**Warning signs:**
+- Analytics dashboard shows "No data" after 24 hours with auto-inject enabled
+- Workers analytics (in Workers dashboard) shows requests, but Web Analytics shows 0 visitors
+- Toggling auto-inject on/off in dashboard has no effect
+- No `cloudflareinsights.com` request visible in browser DevTools Network tab
+
+**Phase to address:** Analytics phase — use manual installation from the start, never attempt auto-inject
+
+---
+
+### Pitfall 7: Team Photos Without Defined Dimensions Cause CLS on the About Page
+
+**What goes wrong:**
+Team member photos added via `<img>` tags without `width` and `height` attributes (or via Astro's `<Image>` without proper sizing) cause layout shift as images load. The About page currently has placeholder content — replacing it with real photos from inconsistent sources (phone camera, LinkedIn, professional photos at different aspect ratios) makes this worse.
+
+**Why it happens:**
+Photos from different sources have unpredictable dimensions. Developers use CSS to constrain them (`object-fit: cover; width: 150px; height: 150px`) but forget that the browser needs the attributes in HTML to reserve space before the image loads.
+
+**How to avoid:**
+- Store all team photos in `src/assets/team/` (not `public/`) so Astro can optimize them
+- Use Astro's `<Image>` component with explicit `width` and `height`:
+  ```astro
+  import { Image } from 'astro:assets';
+  import teamPhoto from '../assets/team/person-name.jpg';
+  ---
+  <Image
+    src={teamPhoto}
+    alt="Person Name, Title"
+    width={300}
+    height={300}
+    class="rounded-full object-cover"
+  />
+  ```
+- Standardize photo dimensions before adding to repo — crop to square (1:1) at minimum 600px × 600px for quality at 300px display size
+- Use `loading="lazy"` for team photos (they're below the fold)
+
+**Warning signs:**
+- Lighthouse CLS score worsens after adding team section
+- Team photo section "jumps" as page loads on slower connections
+- Photos display at inconsistent sizes despite CSS rules
+
+**Phase to address:** Team section phase — enforce dimensions at the time photos are added
+
+---
+
+### Pitfall 8: Replacing Placeholder Social Proof Stats Without Removing All Instances
+
+**What goes wrong:**
+The placeholder social proof stats ("500+ events hosted", "99% satisfaction rate") may appear in multiple places: the landing page, the features page, meta descriptions, or OG tags. Updating one instance while leaving others creates inconsistency — a visitor reads one number on the homepage and a different one on the features page.
+
+**Why it happens:**
+Content is duplicated across components during initial build for speed. There's no single source of truth for marketing claims. When updating, developers fix the visible instance but miss the others.
+
+**How to avoid:**
+Before making any changes, search the entire codebase for all instances of the placeholder content:
+```bash
+grep -r "500+" src/
+grep -r "99%" src/
+grep -r "satisfaction" src/
+grep -ri "placeholder" src/
+```
+Centralize social proof claims in `src/consts.ts` so they have one authoritative source:
+```typescript
+export const SOCIAL_PROOF = {
+  eventsHosted: "50+",
+  tagline: "Trusted by nonprofits and corporate teams across the region",
+} as const;
+```
+Import from consts in all components.
+
+**Warning signs:**
+- Different numbers or claims visible when switching between pages
+- `grep` reveals more matches than expected for placeholder text
+- Old stats visible in `<meta>` description or OG tags even after page content updated
+
+**Phase to address:** Social proof rework phase — grep first, change second
+
+---
+
+## Critical Pitfalls — v1.0 Foundation (Preserved)
+
+### Pitfall 9: Wrong Output Mode — Deploying SSR When Static Is Correct
+
+**What goes wrong:**
+The `@astrojs/cloudflare` adapter defaults to `output: 'server'`, which server-renders every page on-demand as a Cloudflare Worker invocation. A marketing site like Rally Trivia has zero dynamic data — every page can (and should) be pre-rendered at build time as static HTML. Defaulting to SSR adds latency, consumes Worker CPU quota, and complicates deployment for zero benefit.
+
+**Why it happens:**
+Developers install `@astrojs/cloudflare` and accept defaults, not realizing the adapter default assumes SSR. The Cloudflare adapter documentation focuses heavily on SSR use cases.
+
+**How to avoid:**
+In v1.1, when the adapter is added for the API endpoint, confirm that all existing pages remain pre-rendered. In Astro 5, with `output: 'static'` (the default), adding `export const prerender = false` to one file does NOT force all pages into SSR — only that file becomes server-rendered. All other pages remain statically pre-rendered. Verify the build output: only `dist/_worker.js/` and the endpoint should be dynamic; all page HTML files should exist as static files in `dist/`.
+
+**Warning signs:**
+- Every page load appearing in Cloudflare Workers CPU metrics
+- Build output has no `.html` files in `dist/` for pages that should be static
+- TTFB significantly higher than expected for "static" pages
+
+**Phase to address:** Form backend phase — verify build output after adding adapter
+
+---
+
+### Pitfall 10: Missing or Misconfigured `wrangler.jsonc` After Adapter Install
+
+**What goes wrong:**
+The current `wrangler.jsonc` has only `assets.directory`. After `npx astro add cloudflare`, the file is updated to include `main` and `compatibility_flags`. If this update is applied incorrectly (or `astro add` is skipped and the adapter is installed manually), the Worker deployment fails or assets stop being served.
+
+**How to avoid:**
+Always use `npx astro add cloudflare` rather than manual installation. After running it, verify `wrangler.jsonc` contains:
+- `"main": "dist/_worker.js/index.js"`
+- `"compatibility_flags": ["nodejs_compat"]`
+- `"assets": { "directory": "./dist" }`
+
+Run `npm run check` (which runs `astro build && tsc && wrangler deploy --dry-run`) to catch config issues before deploying.
+
+**Warning signs:**
+- `wrangler deploy` succeeds but form endpoint returns 404
+- Build output lacks `dist/_worker.js/` directory
+- `wrangler deploy --dry-run` shows errors about missing main field
+
+**Phase to address:** Form backend phase — run `astro add cloudflare`, verify with dry-run
+
+---
+
+### Pitfall 11: `nodejs_compat` Flag Required for Resend SDK
+
+**What goes wrong:**
+The Resend Node.js SDK (`import { Resend } from 'resend'`) depends on Node.js built-in modules. Cloudflare Workers do not support Node built-ins by default. Without the `nodejs_compat` compatibility flag, the Worker fails at import time with an opaque module resolution error.
+
+**How to avoid:**
+Ensure `wrangler.jsonc` includes:
+```jsonc
+"compatibility_flags": ["nodejs_compat"]
+```
+This is added automatically by `npx astro add cloudflare`. Verify it exists before running `wrangler deploy`.
+
+**Warning signs:**
+- Worker fails with "Cannot find module 'node:...' " or similar import error
+- Resend SDK works in local `npm run dev` but fails after `wrangler deploy`
+- `wrangler tail` shows module resolution errors on first Worker invocation
+
+**Phase to address:** Form backend phase — verify flag before first deploy
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 6: Images Without Width/Height Cause CLS (Cumulative Layout Shift)
+### Pitfall 12: No Error State in the Form After Real Submission Fails
 
 **What goes wrong:**
-Images rendered without explicit `width` and `height` attributes cause the browser to not reserve space before the image loads, resulting in layout shift as the page reflows around the loading image. This tanks the CLS Core Web Vital score.
+The current form has only two states: validation error (pre-submit) and success (thank-you view). There is no failure state for a successful POST that returns a non-200 response. If Resend is down, the API key is wrong, or any server error occurs, the form silently swallows the error and the user is left staring at a spinning button until they give up. The lead is lost and they have no way to contact you.
 
 **How to avoid:**
-Always pass `width` and `height` to Astro's `<Image>` component. For local images, Astro infers dimensions automatically — don't override them with CSS-only sizing. For remote images, always specify dimensions. Never use `width: 100%` in CSS as a substitute for proper sizing attributes.
+Add a third state to the form — a server error state with a fallback message:
+```html
+<!-- Add above the form -->
+<div id="submit-error" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+  <p>Something went wrong. Please email us directly at <a href="mailto:hello@rallytrivia.com">hello@rallytrivia.com</a>.</p>
+</div>
+```
+In the submit handler, catch non-200 responses and show this banner rather than the thank-you state.
 
 **Warning signs:**
-- Lighthouse CLS score above 0.1
-- Content visibly shifts as images load
-- "Image elements do not have explicit width and height" in Lighthouse
+- Form submit hangs indefinitely during an API outage
+- No fallback contact method visible if form fails
+- Error logged to console but user sees no feedback
 
-**Phase to address:** Phase 2 (Content pages) — establish pattern in the first component
+**Phase to address:** Form backend phase — add error state when wiring the fetch call
 
 ---
 
-### Pitfall 7: Contact Form Built Without Spam Protection Placeholder
+### Pitfall 13: Resend Rate Limit Is 2 Requests Per Second — Not a Real Concern at This Scale, But Log It
 
 **What goes wrong:**
-A contact form with no spam protection, even with a form-UI-only approach (no backend yet), sets up for a spam problem when the backend is wired up. Modern spam bots ignore basic honeypot fields; submitting hundreds of fake leads immediately after going live is a common outcome.
+Resend's default rate limit is 2 requests per second. For a marketing site receiving occasional demo requests, this is irrelevant. However, if the form lacks spam protection (no honeypot, no rate limiting), a bot could trigger rapid sequential submissions and exhaust the limit, causing legitimate submissions to be rejected with 429 errors.
 
 **How to avoid:**
-Even in the UI-only phase, include a honeypot field (hidden via CSS, not `display:none` — bots detect that):
+The existing form has client-side validation but no honeypot field. Before wiring the backend, add a honeypot input (hidden from users, bots fill it in):
 ```html
-<div style="position:absolute;left:-9999px;opacity:0;">
+<div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;" aria-hidden="true">
   <label for="website">Leave empty</label>
   <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
 </div>
 ```
-When the backend is wired up, validate server-side that this field is empty before processing. Pair with a JavaScript-generated timestamp token to filter non-browser submissions.
-
-**Warning signs:**
-- Form submissions immediately after launch that look like test data or gibberish
-- Multiple submissions from same IP within seconds
-
-**Phase to address:** Phase 3 (Contact form) — include honeypot in form HTML from day one
-
----
-
-### Pitfall 8: Tailwind CSS v4 Integration Confusion (Wrong Integration Method)
-
-**What goes wrong:**
-Tailwind CSS v4 (released early 2025) completely changed how it integrates with Astro. The old `@astrojs/tailwind` integration is deprecated for v4. Using the old integration with Tailwind v4 causes styles to not apply, or causes partial/broken styling that's hard to debug. The v3 `@tailwind` directives don't exist in v4.
-
-**How to avoid:**
-Use the Vite plugin approach for Tailwind v4 (not the Astro integration):
-```js
-// astro.config.mjs
-import tailwindcss from '@tailwindcss/vite';
-export default defineConfig({
-  vite: { plugins: [tailwindcss()] },
-});
-```
-Import Tailwind in a global CSS file:
-```css
-@import "tailwindcss";
-```
-Do NOT run `astro add tailwind` — it installs the v3-compatible integration. Install `tailwindcss` and `@tailwindcss/vite` manually. Alternatively, if using Tailwind v3 intentionally, use `@astrojs/tailwind` — just don't mix versions.
-
-**Warning signs:**
-- Tailwind classes present in HTML but styles not applied in browser
-- Build succeeds but no Tailwind output in the CSS bundle
-- `Unknown at rule @tailwind` errors in browser console
-
-**Phase to address:** Phase 1 (Project setup) — get this right before writing any component styles
-
----
-
-### Pitfall 9: Duplicate Meta Descriptions and Title Tags Across Pages
-
-**What goes wrong:**
-Using a shared `<head>` layout component that hardcodes the site name as the `<title>` and description — or copying the same tags to every page — produces duplicate metadata. Google devalues duplicate titles, and users see "Rally Trivia | Rally Trivia" in browser tabs.
-
-**How to avoid:**
-Create a reusable `<SEO>` or `<Head>` component that accepts `title` and `description` as props with page-specific defaults:
-```astro
----
-interface Props {
-  title: string;
-  description: string;
-}
-const { title, description } = Astro.props;
----
-<title>{title} | Rally Trivia</title>
-<meta name="description" content={description} />
-<meta property="og:title" content={`${title} | Rally Trivia`} />
-```
-Every page should pass unique, page-specific values. Aim for titles 50-60 characters and descriptions 120-160 characters.
-
-**Warning signs:**
-- All pages have identical `<title>` tags in view-source
-- Google Search Console shows "Duplicate title tags" or "Duplicate meta descriptions"
-
-**Phase to address:** Phase 1 (Base layout component) — design the `<head>` component correctly before any page content
-
----
-
-### Pitfall 10: Custom Fonts Causing FOUT and CLS
-
-**What goes wrong:**
-Loading custom fonts (Google Fonts or local fonts) without `font-display: swap` and preload hints causes either invisible text during load (FOIT) or layout-shifting text swap (FOUT). On a professional marketing site with brand typography, this looks broken and unprofessional.
-
-**How to avoid:**
-Self-host fonts in `public/fonts/` rather than using Google Fonts CDN (eliminates the external DNS lookup, gives full control over caching). Always set `font-display: swap` in the `@font-face` declaration. Preload the most-used font weight in `<head>`:
-```html
-<link rel="preload" href="/fonts/brand-font-regular.woff2" as="font" type="font/woff2" crossorigin>
-```
-If using Google Fonts, use the `display=swap` parameter in the URL.
-
-**Warning signs:**
-- Text visibly "snaps" to brand font after initial render
-- Lighthouse flags "Ensure text remains visible during webfont load"
-- Significant CLS score attributed to font loading in WebPageTest
-
-**Phase to address:** Phase 1 (Base layout) — set up fonts correctly before any typography is applied
-
----
-
-## Minor Pitfalls
-
-### Pitfall 11: `nodejs_compat` Flag Not Set When Using Node Built-ins
-
-**What goes wrong:**
-Any library (or custom code) that imports from Node.js built-in modules (`node:crypto`, `node:stream`, etc.) will fail to build or fail at runtime if `nodejs_compat` is not in `compatibility_flags` in `wrangler.jsonc`. Vitest tests pass locally because Vitest automatically injects this flag — masking the production mismatch.
-
-**How to avoid:**
-Always include `"nodejs_compat"` in `compatibility_flags` if any SSR or Worker code is present. For pure static output this is irrelevant, but include it preemptively if hybrid mode is used.
-
-**Phase to address:** Phase 1 (Wrangler config setup)
-
----
-
-### Pitfall 12: Missing Custom 404 Page Configuration
-
-**What goes wrong:**
-Cloudflare Workers does not automatically serve custom `404.html` pages from a static assets folder. Without setting `not_found_handling` in `wrangler.jsonc`, invalid URLs show Cloudflare's default error page instead of the branded 404 page Astro generates.
-
-**How to avoid:**
-Add to `wrangler.jsonc`:
-```jsonc
-{
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+In the server endpoint, reject any submission where this field is non-empty:
+```typescript
+if (body.website) {
+  return new Response(JSON.stringify({ ok: true }), { status: 200 }); // Silently discard
 }
 ```
-Or create an explicit `404.astro` page and configure `not_found_handling: "404-page"` to serve `404.html` for unmatched routes.
+Silent discard (vs. 400 error) avoids confirming to bots that protection exists.
 
-**Phase to address:** Phase 2 (Page structure)
+**Warning signs:**
+- Resend dashboard shows unusually high send volume shortly after launch
+- Multiple submissions with identical or nonsensical content
+- Resend API returns 429 errors in Worker logs
+
+**Phase to address:** Form backend phase — add honeypot to form HTML before wiring endpoint
 
 ---
 
-### Pitfall 13: Deploying Without Reviewing robots.txt
+### Pitfall 14: Analytics Beacon Blocked by Ad Blockers — Do Not Rely Solely on It
 
 **What goes wrong:**
-Astro generates no `robots.txt` by default. Without one, search engine crawlers still index everything — which is fine — but there's no way to control indexing of staging environments, and you miss the sitemap directive that helps with faster indexing.
+Cloudflare Web Analytics uses a client-side beacon (`beacon.min.js`) that most ad blockers and privacy extensions block. On a B2B audience (event planners, nonprofit coordinators) that may use tools like uBlock Origin, a meaningful percentage of traffic will not be counted. Decisions based solely on Cloudflare Analytics data will undercount real traffic.
 
 **How to avoid:**
-Create `public/robots.txt` manually:
-```
-User-agent: *
-Allow: /
-Sitemap: https://rallytrivia.com/sitemap-index.xml
-```
-For staging/preview deployments, add a `robots.txt` that disallows crawling — or add `noindex` headers at the Cloudflare level for non-production environments.
+Accept this as an inherent limitation of any client-side analytics solution (including Google Analytics). For a marketing site at this scale, the signal is still useful for relative trends even if absolute counts are deflated. Cloudflare's paid plans offer edge-level analytics that cannot be blocked, but this is unnecessary at current scale.
 
-**Phase to address:** Phase 1 (Infrastructure) or Phase 2 (Launch prep)
+Treat analytics data as directional, not absolute. Note this limitation in any reporting.
+
+**Warning signs:**
+- Analytics traffic appears much lower than email click-through rates suggest
+- Traffic from known sources (e.g., a newsletter link) doesn't show in analytics
+
+**Phase to address:** Analytics phase — document limitation, accept as acceptable for current scale
 
 ---
 
@@ -330,12 +438,12 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Inline all styles in components | Faster initial build | Hard to maintain brand consistency, no design tokens | Never — use Tailwind utilities or shared CSS variables |
-| Skip `<Image>` component, use raw `<img>` | Simpler syntax | No WebP conversion, no srcset, CLS from missing dimensions | Never for hero/feature images |
-| Hardcode copy in components | Quick initial build | Painful to update, no content management path | Acceptable for MVP, address before scaling copy changes |
-| No sitemap/robots.txt at launch | Saves 30 minutes | Slower indexing, no crawl control | Never — these take 10 minutes to add |
-| Use Cloudflare Pages instead of Workers | Simpler initial deploy | Pages is deprecated (April 2025), migration required later | Only if timeline is extremely tight; Workers is trivially different |
-| Skip environment-specific wrangler configs | Simpler setup | Staging deployments index in Google, mixed preview/prod data | Never — add `wrangler.staging.jsonc` from day one |
+| Inline social proof claims in components | Fast content update | Copy changes require code deploys, claims can drift out of sync | Never — centralize in `src/consts.ts` |
+| Auto-inject Cloudflare Analytics (vs manual) | Zero code change | Unreliable, data often missing entirely | Never — use manual beacon |
+| Storing Resend API key in `.env` without wrangler secret | Easier local dev | Risk of key exposure via git commit; doesn't work in Cloudflare Workers runtime anyway | Never — use `.dev.vars` locally, `wrangler secret put` for production |
+| Skip error handling in form endpoint | Faster implementation | Silent failures lose leads, no debugging signal | Never for a conversion-critical form |
+| Using `full_access` scope Resend key in production | One key for everything | If key leaks, attacker can delete emails, domains, API keys | Never — use `sending_access` scope in production |
+| Skip team photo size standardization | Add any photo quickly | Inconsistent sizing, layout shift, pixelated images | Never — 5-minute Figma/Photoshop crop upfront saves hours of CSS fighting |
 
 ---
 
@@ -343,24 +451,12 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| `@astrojs/cloudflare` adapter | Installing it for a fully static site | Skip adapter entirely for `output: 'static'`; use it only for SSR/hybrid |
-| `@astrojs/sitemap` | Forgetting `site` property in `astro.config.mjs` | Always set `site: 'https://rallytrivia.com'` before adding sitemap |
-| Tailwind CSS v4 | Using deprecated `@astrojs/tailwind` integration | Use `@tailwindcss/vite` Vite plugin directly |
-| Cloudflare DNS | Adding custom domain without proxied DNS record | Worker routes require proxied (orange cloud) DNS records or they return `ERR_NAME_NOT_RESOLVED` |
-| Cloudflare Auto Minify | Leaving it enabled (dashboard default) | Disable under Speed > Optimization before any testing |
-| Google Fonts | Loading from Google CDN at runtime | Self-host in `public/fonts/` for privacy, caching control, and no external DNS round-trip |
-
----
-
-## Performance Traps
-
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| LCP image lazy-loaded | Poor LCP score, hero "pops in" | `loading="eager" fetchpriority="high"` on hero image | Immediately — affects first visitor impression |
-| Images without dimensions | High CLS score, layout jumps | Always pass `width`/`height` to `<Image>` | Any image load on slower connections |
-| External font CDN (Google Fonts) | FOUT, extra DNS lookup, CLS | Self-host fonts in `public/fonts/` | Visible on slow connections and first-visit |
-| Importing JS libraries with heavy side effects into Astro components | Client bundle bloat, slower TTI | Use `client:visible` not `client:load`; avoid libraries with global side effects | At any scale — it's always suboptimal |
-| SSR mode for all-static content | Worker CPU quota consumed, latency | Use `output: 'static'` for marketing sites | From day one — unnecessary operational cost |
+| `@astrojs/cloudflare` adapter | Adding manually without `astro add cloudflare` | Always use `npx astro add cloudflare` — it wires up `wrangler.jsonc` correctly |
+| Resend API | Using `onboarding@resend.dev` as the `from` address in production | Verify custom domain in Resend before writing any code |
+| Resend domain verification in Cloudflare DNS | Adding DKIM record with orange cloud proxy | Set DKIM record to "DNS Only" (grey cloud) or verification fails |
+| Cloudflare Web Analytics | Enabling "automatic" injection via dashboard toggle | Use manual JS snippet in `BaseHead.astro` — auto-inject is unreliable on Workers |
+| Resend API key in Astro endpoint | Accessing via `import.meta.env.RESEND_API_KEY` | Access via `context.locals.runtime.env.RESEND_API_KEY` in Cloudflare Workers runtime |
+| Resend SDK in Cloudflare Workers | Missing `nodejs_compat` flag | Add `"compatibility_flags": ["nodejs_compat"]` to `wrangler.jsonc` |
 
 ---
 
@@ -368,10 +464,11 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| No honeypot on contact form | Immediate spam flood when backend wired up | Add honeypot hidden field in form HTML now, validate server-side later |
-| Committing Cloudflare API token or Wrangler auth to repo | Account takeover | Use `wrangler secret put` or CI environment variables; never commit `.env` with credentials |
-| No CSRF protection on form endpoint | Cross-site form abuse when backend added | Astro 5 Actions handle CSRF automatically; if using custom endpoint, validate `Origin` header matches `site` config |
-| Staging site indexed by Google | Confuses SEO, duplicate content | Add `noindex` meta or Cloudflare Access restriction on preview deployments |
+| Committing `.env` with Resend API key | Key exposed in git history — revoke and rotate immediately | Add `.env` and `.dev.vars` to `.gitignore`; use `wrangler secret put` |
+| Using `full_access` Resend API key in production Worker | Compromised key gives attacker full account control | Create `sending_access`-scoped key specifically for the Worker |
+| No server-side validation of form fields | Bypassing client-side validation to inject malicious content | Validate required fields and field lengths in the endpoint handler, not just in the browser |
+| No honeypot field | Bot spam floods Resend quota and inbox | Add honeypot field; silently discard submissions where it's filled |
+| Calling Resend API from client-side JS | API key exposed in browser; CORS will block it anyway | All Resend calls must happen in the server endpoint, never in `<script>` tags |
 
 ---
 
@@ -379,26 +476,44 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Single CTA ("Request Demo") buried below the fold | Visitors leave without converting | CTA visible in hero AND navigation; repeat CTA at bottom of features page |
-| Demo form with too many required fields | Friction reduces conversion | Name, email, org (optional), message — 3-4 fields max |
-| Mobile nav without proper focus management | Inaccessible on screen readers and keyboard | Use `dialog` element or proper `aria-expanded` toggle for mobile nav |
-| No visual confirmation after form submit | User re-submits, gets confused | Show inline success message; disable submit button during submission |
-| Navy-on-dark-blue text for body copy | Low contrast ratio, fails WCAG AA | Use high-contrast text colors (white or near-white) on dark backgrounds; test with contrast checker |
+| No form error state after backend failure | User loses submission, no fallback contact info | Show error banner with direct email address fallback |
+| Form shows success even when API returns error | Submission lost without user awareness | Gate thank-you state on confirmed 2xx response from endpoint |
+| Double-submit on slow connection | Duplicate email notifications | Disable submit button immediately on first click; re-enable only on error |
+| Team photos without alt text | Inaccessible to screen readers | Use descriptive alt text: "Jane Smith, Co-Founder and Head of Events" |
+| Qualitative social proof without specificity | Vague claims read as marketing fluff | "Trusted by 12 nonprofits in the Chicago area" > "Trusted by nonprofits everywhere" |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Sitemap:** Verify `dist/sitemap-index.xml` exists after `npm run build` — if missing, `site` property is not set
-- [ ] **Meta tags:** View-source each page to confirm unique `<title>` and `<meta name="description">` values
-- [ ] **Mobile nav:** Test hamburger menu on actual 375px iPhone — Tailwind responsive breakpoints sometimes behave differently on real devices
-- [ ] **Form honeypot:** Confirm hidden field is present in rendered HTML (`view-source`) but invisible and non-interactive in browser
-- [ ] **Robots.txt:** Confirm `public/robots.txt` exists and references sitemap URL
-- [ ] **Auto Minify:** Confirm Cloudflare Auto Minify is disabled in dashboard before declaring production "working"
-- [ ] **Image dimensions:** Run Lighthouse — confirm CLS is under 0.1 and no LCP lazy-load warning
-- [ ] **404 page:** Test a nonexistent URL (e.g., `/not-a-page`) — confirm branded 404 appears, not Cloudflare default
-- [ ] **Canonical tags:** Confirm `<link rel="canonical">` points to correct production URL on every page
-- [ ] **Open Graph tags:** Share a URL in Slack or iMessage to test OG preview image and title render correctly
+### Form Backend
+- [ ] **Adapter installed:** `@astrojs/cloudflare` appears in `package.json` dependencies
+- [ ] **Endpoint exists:** `src/pages/api/submit.ts` with `export const prerender = false`
+- [ ] **wrangler.jsonc updated:** Contains `"main"` field and `"nodejs_compat"` flag
+- [ ] **Secret configured:** `wrangler secret put RESEND_API_KEY` run in production environment
+- [ ] **Domain verified:** Resend dashboard shows green status for sending domain
+- [ ] **DKIM grey cloud:** Cloudflare DNS shows DKIM record as "DNS Only"
+- [ ] **Real fetch in form:** Client-side submit handler sends actual POST, not `setTimeout` simulation
+- [ ] **Error state exists:** Form shows error banner (not thank-you) on non-200 response
+- [ ] **Honeypot present:** Hidden field in form HTML, validated server-side
+- [ ] **End-to-end test:** Submit form on production deployment, confirm email arrives in inbox
+
+### Analytics
+- [ ] **Manual snippet added:** `beacon.min.js` script tag in `BaseHead.astro`
+- [ ] **Token is site-specific:** Beacon `data-cf-beacon` token matches the registered site in dashboard
+- [ ] **Network tab confirms:** DevTools shows request to `cloudflareinsights.com` on page load
+- [ ] **Dashboard shows data:** At least one pageview visible in Cloudflare Analytics within 30 minutes of manual testing
+
+### Social Proof
+- [ ] **All instances updated:** `grep` confirms no old placeholder numbers remain anywhere in `src/`
+- [ ] **Claims centralized:** Stats/claims live in `src/consts.ts`, not hardcoded in multiple components
+- [ ] **Copy reviewed:** No claims that could be misread as specific statistics without basis
+
+### Team Section
+- [ ] **Photos optimized:** All images stored in `src/assets/team/`, processed by Astro `<Image>`
+- [ ] **Dimensions explicit:** Each `<Image>` has `width` and `height` set
+- [ ] **Alt text meaningful:** Alt text includes name and title for each team member
+- [ ] **CLS clean:** Lighthouse CLS remains under 0.1 after team photos added
 
 ---
 
@@ -406,13 +521,13 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Wrong output mode (SSR vs static) | LOW | Change `output` in `astro.config.mjs`, adjust `wrangler.jsonc`, redeploy |
-| Tailwind v3/v4 integration mismatch | MEDIUM | Uninstall old integration, install Vite plugin, update CSS imports, test all components |
-| LCP image lazy-loading | LOW | Add `loading="eager" fetchpriority="high"` to hero image, rebuild, redeploy |
-| Cloudflare Auto Minify breakage | LOW | Toggle off in dashboard — instant effect without redeploy |
-| Missing sitemap | LOW | Add `site` property, add `@astrojs/sitemap` integration, rebuild |
-| Spam flood on form launch | MEDIUM | Add honeypot + rate limiting at Cloudflare WAF level, deploy backend filter |
-| Pages deprecated infrastructure | MEDIUM | Migrate to Workers static assets (different wrangler config, same content) |
+| Missing adapter (404 on endpoint) | LOW | Run `npx astro add cloudflare`, verify wrangler.jsonc, redeploy |
+| Resend domain not verified (403 errors) | MEDIUM | Add DNS records, wait propagation, re-test — emails queue until fixed |
+| API key committed to git | HIGH | Revoke key immediately in Resend dashboard, rotate, force-push history clean (or accept exposure), update wrangler secret |
+| Analytics auto-inject not working | LOW | Switch to manual beacon in BaseHead.astro, redeploy |
+| Fake success on form failure | LOW | Add try/catch and error state to submit handler, redeploy |
+| Placeholder content surviving in production | LOW | grep, fix, redeploy |
+| Team photos causing CLS | LOW | Move to `src/assets/`, use `<Image>` with dimensions, redeploy |
 
 ---
 
@@ -420,38 +535,37 @@ For staging/preview deployments, add a `robots.txt` that disallows crawling — 
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Wrong output mode (SSR vs static) | Phase 1: Infrastructure setup | `npm run build` output contains only HTML/CSS/JS files, no `_worker.js` |
-| Wrangler misconfiguration | Phase 1: Infrastructure setup | `wrangler deploy` succeeds, all pages return 200, assets load |
-| Cloudflare Auto Minify | Phase 1: Infrastructure setup | Check Cloudflare dashboard setting before first QA |
-| Missing `site` property / sitemap | Phase 1: Infrastructure setup | `dist/sitemap-index.xml` present after build |
-| Tailwind v4 integration method | Phase 1: Project scaffold | All Tailwind utilities apply correctly in `npm run dev` |
-| Base layout SEO component | Phase 1: Base layout component | View-source confirms unique titles/descriptions per page |
-| Font loading (FOUT/CLS) | Phase 1: Base layout component | WebPageTest shows no font-related CLS |
-| LCP image lazy-loading | Phase 2: Landing page build | Lighthouse LCP under 2.5s, no lazy-load warning |
-| Image dimensions / CLS | Phase 2: Content pages | Lighthouse CLS under 0.1 |
-| Contact form honeypot | Phase 3: Contact form | Honeypot field visible in view-source, hidden visually |
-| 404 page config | Phase 2: Page structure | `/not-a-page` shows branded 404, not Cloudflare default |
-| Mobile responsiveness | Phase 2: All pages | Manual test on 375px/768px viewports + Lighthouse mobile score |
+| Missing Cloudflare adapter | Form backend — Day 1 setup | `npm run build` produces `dist/_worker.js/`; `wrangler deploy --dry-run` succeeds |
+| Resend domain not verified | Form backend — before any code written | Resend dashboard shows green verification status |
+| API key security | Form backend — before first deploy | Key stored as wrangler secret, absent from all source files |
+| CORS errors masking Worker errors | Form backend — first end-to-end test | `wrangler tail` shows real errors; browser shows meaningful error messages |
+| Fake submit still running | Form backend — wiring the fetch call | DevTools Network shows POST request to `/api/submit` |
+| No form error state | Form backend — wiring the fetch call | Simulate 500 response; confirm error banner appears |
+| Analytics auto-inject unreliable | Analytics — Day 1 | Manual beacon script in BaseHead.astro; DevTools confirms beacon request |
+| Ad blocker blocking analytics | Analytics — documentation | Noted as known limitation, no fix required |
+| Placeholder content surviving | Social proof rework | `grep` for old strings returns zero results |
+| Team photo CLS | Team section | Lighthouse CLS under 0.1 after team section added |
+| Missing team photo alt text | Team section | Lighthouse accessibility audit shows no missing alt text |
 
 ---
 
 ## Sources
 
-- [Astro Cloudflare Adapter Docs](https://docs.astro.build/en/guides/integrations-guide/cloudflare/) — Configuration pitfalls, platformProxy, image service (HIGH confidence)
-- [Deploy Astro to Cloudflare — Official Docs](https://docs.astro.build/en/guides/deploy/cloudflare/) — 404 handling, Auto Minify warning, wrangler config (HIGH confidence)
-- [Cloudflare Workers Best Practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/) — nodejs_compat, DNS routing, global state (HIGH confidence)
-- [Cloudflare Workers Framework Guide: Astro](https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/) — Static vs SSR deployment paths (HIGH confidence)
-- [Astro Sitemap Integration](https://docs.astro.build/en/guides/integrations-guide/sitemap/) — `site` property requirement (HIGH confidence)
-- [Astro Images Guide](https://docs.astro.build/en/guides/images/) — loading, dimensions, CLS (HIGH confidence)
-- [Tailwind CSS v4 Upgrade Guide](https://tailwindcss.com/docs/upgrade-guide) — Integration method changes (HIGH confidence)
-- [Astro + Tailwind v4 Setup Guide](https://tailkits.com/blog/astro-tailwind-setup/) — Vite plugin approach (MEDIUM confidence)
-- [How to Index Astro Site 2025](https://indexplease.com/blog/how-to-index-astro-site/) — sitemap, robots.txt, canonical (MEDIUM confidence)
-- [Astro Image Optimization — LCP Guide](https://www.corewebvitals.io/pagespeed/fix-largest-contentful-paint-image-was-lazily-loaded) — LCP lazy-loading impact (MEDIUM confidence)
-- [Migrate Astro from Pages to Workers](https://cai.im/blog/migrate-astro-site-from-cloudflare-pages-to-workers/) — Pages deprecation, Workers migration (MEDIUM confidence)
-- [Secure Astro 5 Contact Forms](https://farrosfr.com/blog/secure-astro-5-contact-forms-with-resend-and-upstash/) — Honeypot + token spam prevention (MEDIUM confidence)
-- [Astro Google Fonts Optimizer](https://github.com/sebholstein/astro-google-fonts-optimizer) — Font loading best practices (MEDIUM confidence)
+- [Astro Cloudflare Adapter Docs](https://docs.astro.build/en/guides/integrations-guide/cloudflare/) — Adapter install, wrangler.jsonc structure, compatibility flags (HIGH confidence)
+- [Cloudflare Developer Spotlight: Astro + Resend Form Tutorial](https://developers.cloudflare.com/developer-spotlight/tutorials/handle-form-submission-with-astro-resend/) — End-to-end form integration pattern (HIGH confidence)
+- [Cloudflare Workers: Send Emails with Resend Tutorial](https://developers.cloudflare.com/workers/tutorials/send-emails-with-resend/) — Secret management, env access pattern, Resend SDK usage (HIGH confidence)
+- [Astro On-Demand Rendering Guide](https://docs.astro.build/en/guides/on-demand-rendering/) — `prerender = false` behavior, static + server endpoint mixing (HIGH confidence)
+- [Resend Docs: Send with Cloudflare Workers](https://resend.com/docs/send-with-cloudflare-workers) — SDK usage, environment access (HIGH confidence)
+- [Resend Docs: Domain Verification on Cloudflare](https://resend.com/docs/dashboard/domains/cloudflare) — DKIM grey cloud requirement, DNS records (HIGH confidence)
+- [Resend Docs: Account Quotas and Limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits) — Rate limits, free tier restrictions (HIGH confidence)
+- [Cloudflare Web Analytics: Get Started](https://developers.cloudflare.com/web-analytics/get-started/) — Manual beacon installation, auto-inject limitations (HIGH confidence)
+- [Cloudflare Web Analytics: FAQ](https://developers.cloudflare.com/web-analytics/faq/) — Auto-inject cache header conflict, ad blocker impact (HIGH confidence)
+- [Cloudflare Community: Web Analytics Not Injecting JS Token](https://community.cloudflare.com/t/web-analytics-not-injecting-the-js-token/860770) — Real-world auto-inject failure reports (MEDIUM confidence)
+- [Astro Images Guide](https://docs.astro.build/en/guides/images/) — CLS prevention, Image component dimensions (HIGH confidence)
+- [Cloudflare Community: Security Considerations for Contact Form](https://community.cloudflare.com/t/security-considerations-for-a-contact-form/415120) — Honeypot, rate limiting, CORS pitfalls (MEDIUM confidence)
+- [Resend GitHub: resend-cloudflare-workers-example](https://github.com/resend/resend-cloudflare-workers-example) — Reference implementation (HIGH confidence)
 
 ---
 
-*Pitfalls research for: Astro marketing site on Cloudflare Workers (Rally Trivia)*
+*Pitfalls research for: Astro marketing site on Cloudflare Workers — v1.1 additions (form backend, analytics, real content)*
 *Researched: 2026-02-22*

@@ -17,10 +17,12 @@
 		"@tailwindcss/vite": "^4.2.0",
 		"astro": "5.16.2",
 		"motion": "^12.34.3",
+		"resend": "^6.9.2",
 		"tailwindcss": "^4.2.0",
 		"typescript": "5.9.3"
 	},
 	"devDependencies": {
+		"concurrently": "^9.2.1",
 		"wrangler": "^4.67.0"
 	},
 	"private": true,
@@ -30,8 +32,11 @@
 		"cf-typegen": "wrangler types",
 		"check": "astro build && tsc && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
-		"dev": "astro dev",
-		"preview": "astro build && wrangler dev"
+		"dev": "concurrently \"astro dev\" \"wrangler dev --port 8787\"",
+		"dev:astro": "astro dev",
+		"dev:worker": "wrangler dev --port 8787",
+		"preview": "astro build && wrangler dev",
+		"test": "bash scripts/test-worker.sh"
 	},
 	"type": "module"
 }

@@ -1,186 +1,201 @@
 # Project Research Summary
 
-**Project:** Rally Trivia Marketing Site
-**Domain:** SaaS marketing/landing page — live event trivia platform (nonprofit fundraisers + corporate events)
+**Project:** Rally Trivia Marketing Site — v1.1 Production Polish
+**Domain:** Astro static site with Cloudflare Workers API backend (additions to validated v1.0 stack)
 **Researched:** 2026-02-22
-**Confidence:** HIGH (stack + architecture from official docs; features + pitfalls from verified practitioner sources)
+**Confidence:** HIGH
 
 ## Executive Summary
 
-Rally Trivia's marketing site is a conversion-focused, static marketing site targeting two distinct buyer segments: nonprofit event coordinators running fundraiser trivia nights, and corporate event planners organizing team-building events. The site's sole job is to convert visitors into demo requests. Research confirms this is a well-understood problem domain with clear best practices: static-first Astro on Cloudflare Workers, Tailwind CSS v4 for styling, and outcome-driven copywriting that speaks to each audience segment's specific pain points. The stack is modern but stable — Astro 5.17, Tailwind v4, and Cloudflare Workers static assets are all production-ready with strong official documentation.
+Rally Trivia v1.1 upgrades a fully-shipped static marketing site with four targeted production-polish features: a working form backend (Resend email via Cloudflare Worker), privacy-first analytics (Cloudflare Web Analytics), honest social proof copy (replacing placeholder stats), and a real team section. The existing v1.0 stack — Astro 5 static output, Tailwind v4, Cloudflare Workers for static asset delivery — is sound and requires no breaking changes. The only new npm dependency is `resend@^6.9.0`, which explicitly supports Cloudflare's V8 isolate runtime as of v6.9.2.
 
-The recommended approach is to build in three phases: infrastructure and scaffold first (to get pitfall-prone configuration decisions locked in correctly), followed by the high-conversion landing page and supporting pages, then the contact/demo form as a self-contained deliverable. Every phase decision flows from a core architectural constraint: this is a fully static site — no Cloudflare adapter, no SSR, no Workers compute. All pages are pre-rendered at build time and served from Cloudflare's global edge cache. The form backend (email delivery via Resend) is explicitly deferred; the form ships as a UI-only component in v1.
+The recommended approach is to keep Astro in `output: 'static'` mode and add a standalone `worker/index.ts` script that handles only the `POST /api/contact` endpoint, with all other traffic falling through to static assets via `env.ASSETS.fetch()`. This avoids the `@astrojs/cloudflare` SSR adapter entirely and keeps all page delivery fully edge-cached. The two content-only changes (social proof rework and real team section) have no engineering dependencies and can proceed in parallel with backend work.
 
-The main risks are all in Phase 1 (infrastructure setup): using the wrong Astro output mode, misconfiguring Wrangler, using the deprecated Tailwind v3 integration, and missing the `site` property needed for sitemap and canonical URLs. These are well-documented pitfalls with clear prevention steps and low recovery cost if caught early. The single highest-stakes content decision is messaging: competitors (Crowdpurr, SocialPoint) use generic event platform language. Rally Trivia's differentiation comes from being specific — naming the use cases ("fundraiser trivia nights," "corporate game nights") and leading with event organizer pain points rather than feature lists.
+The primary risk in this milestone is the form backend deployment sequence: Resend domain DNS verification must happen before any Worker code is deployed, the Resend API key must be stored as a Wrangler secret (never in source code or client-side JS), and the existing `ContactForm.astro` simulated delay must be replaced with a real `fetch()` call that gates the thank-you state on a confirmed `2xx` response. A secondary risk is Cloudflare Web Analytics auto-inject, which is unreliable on Workers-deployed sites — the manual beacon script in `BaseHead.astro` is the only reliable approach.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is unified around Astro 5.17 (stable, not v6 beta) with static output deployed to Cloudflare Workers via Wrangler 3.x. No `@astrojs/cloudflare` adapter is needed — pure static delivery via `wrangler.jsonc` with `assets.directory: "./dist"`. Tailwind CSS v4 integrates via the `@tailwindcss/vite` Vite plugin (not the legacy `@astrojs/tailwind` integration). Supporting libraries are minimal: `motion` for scroll animations, `astro-seo` for head meta tags, and `@astrojs/sitemap` for XML sitemap generation. Form email delivery via Resend is deferred to a post-launch phase.
+The existing stack is locked and validated in production. No breaking changes are needed. The single new dependency is `resend@^6.9.0`, the only Cloudflare Workers-compatible email SDK and the officially recommended provider in Cloudflare's own developer documentation. Cloudflare Web Analytics requires no npm package — just a one-line `<script defer>` tag with a public token.
+
+The `wrangler.jsonc` configuration change is the most significant structural edit: adding `"main": "worker/index.ts"`, `"assets.binding": "ASSETS"`, and `"assets.run_worker_first": ["/api/*"]` enables a mixed static-plus-Worker deployment where only API routes hit the Worker and all page routes are served from the static asset cache at the edge.
 
 **Core technologies:**
-- **Astro 5.17** — Static site framework; ships zero JS by default; built-in image optimization and routing
-- **Tailwind CSS v4** — Utility-first CSS via `@tailwindcss/vite`; CSS-first `@theme` config replaces `tailwind.config.js`
-- **Cloudflare Workers (static assets)** — Global edge delivery; replaces deprecated Cloudflare Pages; no Worker script needed for static output
-- **Wrangler 3.x** — Deploy CLI; `wrangler.jsonc` + `npx wrangler deploy` is the full deployment path
-- **TypeScript** — Bundled with Astro; use `.astro` frontmatter typing and `src/env.d.ts`
-- **motion (vanilla)** — Scroll/entrance animations without React dependency
-- **astro-seo** — Drop-in `<SEO>` component for Open Graph, Twitter Card, and canonical tags
-- **Resend** — Transactional email for form delivery (install in a later phase after static form UI ships)
+- **`resend@^6.9.0`** — Email delivery API; only Workers-compatible SDK; v6.9.2 explicitly added non-Node V8 isolate support; free tier (3,000/month) is more than sufficient for demo request volume
+- **`worker/index.ts` (new file)** — Cloudflare Worker script; handles `POST /api/contact` and proxies all other requests to `env.ASSETS`; no `@astrojs/cloudflare` adapter needed
+- **Cloudflare Web Analytics beacon** — Privacy-first analytics; cookieless, GDPR-compliant by default; no npm package; no consent banner required; deployed via one `<script defer>` tag
+- **Astro `<Image>` component** — Already in the stack; use for team photos to get automatic WebP conversion and CLS prevention via explicit `width`/`height`
 
 ### Expected Features
 
-Research identifies a clear v1 feature set focused on demo conversion. The site needs 11 must-have features for launch, 5 should-have additions after validation, and several features that should be explicitly deferred to avoid scope creep and operational overhead.
+All four v1.1 features are P1 (required for milestone completion). Research establishes a clear dependency ordering and confirms that two features (content rework) can proceed entirely in parallel with backend work.
 
-**Must have (table stakes):**
-- Hero section with outcome-focused headline and "Request a Demo" CTA above the fold
-- Demo request form — 5 fields max (name, email, org, role, message) with post-submit confirmation
-- Features page with platform capabilities tied to outcomes, not technical specs
-- Social proof block — 2-3 testimonials near hero and near demo CTA
-- Responsive design — mobile, tablet, desktop (83% of web visits are mobile)
-- Shared navigation and footer with consistent branding
-- Product/platform visuals — screenshots or interface preview (30% of SaaS sites skip this; conversion killer)
-- About/story page — especially important for nonprofit buyers who vet vendor values
-- Pain-point-first messaging — leads with event organizer frustrations, not feature bullets
-- Dual audience callout — "For Nonprofits" and "For Corporate Events" framing in a homepage section
-- "How it works" 3-step visual — lets event organizers visualize the night before booking
+**Must have — v1.1 (all P1):**
+- Working form backend — a form that simulates success destroys trust the moment a real prospect submits and hears nothing; backend wiring is the highest-impact change
+- Cloudflare Web Analytics — without analytics the site is flying blind; zero cost, single script tag, no consent banner overhead
+- Social proof rework — fake or placeholder stats are detectable by nonprofit buyers and destroy credibility if caught; qualitative capability highlights are the honest replacement
+- Real team section — placeholder team members on a live site signal the site is unfinished; real names and headshots establish founders are real people investing in the product
 
-**Should have (differentiators, add post-validation):**
-- Quantified social proof — real stats from events once data exists ("$12K raised in one night")
-- Analytics integration (GA4 or Cloudflare Web Analytics)
-- Form backend wiring — connect to Resend for actual email delivery
-- Click-to-play video demo embed in features section
-- Interactive/animated "how it works" steps (currently static at launch)
+**Should have — v1.x (add post-launch when trigger conditions are met):**
+- Honeypot spam prevention — not a real problem yet; add when spam occurs or before promoting the form publicly
+- Quantified social proof — add when real event data exists; never estimate or project
+- Form auto-reply to submitter — the animated thank-you UI state is sufficient for now
+- Genuine customer testimonials — add when real clients can provide verified quotes with name, org, and role
 
-**Defer (v2+):**
-- Blog / content marketing — requires ongoing content investment; empty blog looks worse than no blog
-- Calendly or scheduling embed — explicitly out of scope per PROJECT.md; operational overhead before volume justifies it
-- Pricing page — Rally Trivia not ready to publish pricing publicly
-- Audience-specific sub-pages for SEO targeting
+**Defer to v2+:**
+- Blog / content marketing — requires ongoing content production investment; empty blog looks worse than no blog
+- Pricing page — add when Rally Trivia is ready to publish pricing publicly
+- Calendly embed — out of scope per PROJECT.md; premature scheduling automation
+- Case studies with ROI data — requires established client relationships and measurement infrastructure
 
-**Anti-features to avoid:**
-- Autoplay video in hero — documented conversion killer; bounce rate increases
-- Live chat widget — B2B nonprofit audience finds pop-up chat intrusive; form is sufficient at launch
-- Complex multi-step demo form — conversion drops sharply past 5 fields; qualify leads in the actual demo
-- Calendly embed — explicitly out of scope; premature scheduling automation
+**Anti-features to avoid at any milestone:**
+- Auto-reply emails to form submitters before email deliverability reputation is established
+- Google Analytics / GA4 on this site (requires cookie consent banner for EU/CA users; CWA is the correct choice)
+- CAPTCHA on the contact form (drops conversion rate; honeypot is sufficient at this volume)
 
 ### Architecture Approach
 
-The architecture is deliberately minimal: static Astro pages rendered at build time, served from Cloudflare's edge via `wrangler deploy`. No server-side logic, no Workers compute, no adapter. The build hierarchy is `global styles → shared components (Nav, Footer) → BaseLayout → section components → pages`, and this sequence should drive implementation order. All pages share a single `BaseLayout.astro` that owns the HTML document shell, meta tags, and nav/footer. Pages are composition layers — each page file assembles section components and passes a title/description prop to the layout. Section components are self-contained and reusable (e.g., `CTASection.astro` appears on multiple pages).
+The v1.1 architecture uses the "Worker-augmented static site" pattern: Astro builds fully static HTML/CSS/JS into `dist/`, a standalone `worker/index.ts` handles only `/api/*` routes via `run_worker_first`, and all other traffic falls through to the static asset cache via `env.ASSETS.fetch(request)`. This preserves full edge caching for all pages while enabling a server-side API endpoint — without converting the site to SSR mode. The `@astrojs/cloudflare` adapter is explicitly not used.
 
 **Major components:**
-1. `src/layouts/BaseLayout.astro` — Full HTML shell with typed title/description props; renders Nav and Footer; wraps all pages via `<slot />`
-2. `src/pages/` (index, features, about, contact) — File-based routes; each is a composition of section components wrapped in BaseLayout
-3. `src/components/` — Flat structure: Nav, Footer, Hero, ValueProp, FeatureCard, CTASection, ContactForm — each a self-contained section
-4. `src/styles/global.css` — Single file with `@import "tailwindcss"` and `@theme` block for brand color tokens
-5. `wrangler.jsonc` — Minimal config pointing `assets.directory` at `./dist`; no `main` field needed
+
+| Component | Status | Change |
+|-----------|--------|--------|
+| `worker/index.ts` | NEW | Entire file; handles `POST /api/contact` via Resend SDK; proxies all other routes to `env.ASSETS` |
+| `wrangler.jsonc` | MODIFIED | Add `main`, `assets.binding`, `assets.run_worker_first: ["/api/*"]` |
+| `package.json` | MODIFIED | Add `"resend"` to dependencies |
+| `src/components/ContactForm.astro` | MODIFIED | Replace `setTimeout` simulation with real `fetch('/api/contact')`; add error state; gate thank-you on `2xx` response |
+| `src/components/BaseHead.astro` | MODIFIED | Add CF Web Analytics `<script defer>` beacon tag before `</head>` |
+| `src/pages/index.astro` | MODIFIED | Rework social proof section; remove fake stats; add qualitative capability highlights |
+| `src/pages/about.astro` | MODIFIED | Replace placeholder team members with real names, photos, titles |
+| All other files | UNCHANGED | Layouts, Nav, Footer, features.astro, contact.astro, styles — untouched |
+
+**Key data flow — form submission:**
+```
+User submits form
+  → client validation (existing, unchanged)
+  → fetch('/api/contact', POST, JSON)
+  → Cloudflare edge: run_worker_first routes /api/* to Worker
+  → worker/index.ts: validate fields, call Resend SDK
+  → Resend API: deliver email to demo@rallytrivia.com
+  → Worker: return { ok: true } or { error } with status 500
+  → ContactForm: 2xx → thank-you animation | non-2xx → error banner
+```
 
 ### Critical Pitfalls
 
-Five critical pitfalls must be addressed in Phase 1 (infrastructure setup) before any content is built. All have well-documented prevention steps and low recovery cost if caught during setup, but medium-to-high cost if discovered after significant content has been built on top of a misconfigured foundation.
+1. **Resend domain not verified before Worker deploy** — Resend rejects sends from unverified domains with a 403. DNS verification (DKIM, SPF, DMARC) must be live in Resend dashboard before any Worker code is deployed. Critical detail: set the DKIM record to "DNS Only" (grey cloud) in Cloudflare — the orange proxy cloud prevents DKIM verification from succeeding.
 
-1. **Wrong output mode (installing Cloudflare adapter + `output: 'server'`)** — Use `output: 'static'` (Astro default) with no adapter; configure only `wrangler.jsonc` assets directory. Warning sign: `_worker.js` appears in build output.
-2. **Misconfigured `wrangler.jsonc`** — Static output needs only `name`, `compatibility_date`, and `assets.directory: "./dist"`. No `main` field. Running `wrangler deploy` that succeeds but returns 404s is the symptom.
-3. **Missing `site` property in `astro.config.mjs`** — Required for sitemap generation and canonical URLs. Set `site: 'https://rallytrivia.com'` as the first config line before any content pages are built.
-4. **Tailwind CSS v4 integration method** — Do NOT use `@astrojs/tailwind` (v3 integration). Use `@tailwindcss/vite` Vite plugin directly. v3 directives (`@tailwind base/components/utilities`) don't exist in v4.
-5. **Cloudflare Auto Minify enabled** — Breaks Astro hydration by modifying HTML after Astro renders it. Disable immediately after DNS setup under Speed > Optimization in the Cloudflare dashboard.
+2. **Resend API key in source code or client-side JS** — Store the key exclusively as a Wrangler secret (`npx wrangler secret put RESEND_API_KEY`). Access via `env.RESEND_API_KEY` in `worker/index.ts`. Never in `.env` committed to git, never in any `<script>` tag. Use `sending_access` scope (not `full_access`) for the production key.
 
-**Additional pitfalls for Phase 2 (content pages):**
-- Hero image lazy-loaded by default — explicitly set `loading="eager" fetchpriority="high"` on hero image; LCP can go from 1.3s to 4.8s+ from this mistake alone
-- Images without width/height — causes Cumulative Layout Shift; always pass explicit dimensions to Astro's `<Image>` component
-- Custom fonts from Google CDN — self-host in `public/fonts/` to eliminate external DNS round-trip; set `font-display: swap`
+3. **Cloudflare Web Analytics auto-inject is unreliable on Workers** — Auto-inject via the Cloudflare dashboard toggle does not work reliably for Workers-deployed static sites. Always use the manual JS snippet in `BaseHead.astro`. Never attempt auto-inject for this deployment type.
 
-**Phase 3 (contact form):**
-- Include a CSS honeypot field in the form HTML from day one, even with no backend — prevents spam flood when email delivery is wired up
+4. **CORS errors masking real Worker failures** — When a Worker throws before reaching the response handler, Cloudflare returns a 500 with no CORS headers. The browser reports a CORS error, hiding the actual root cause. Wrap all endpoint logic in `try/catch` that returns CORS headers even on failure. Use `wrangler tail` for real-time Worker error logs.
+
+5. **Form still shows simulated success after backend is wired** — The existing `ContactForm.astro` uses a `setTimeout` simulation that always succeeds regardless of any network call. The real `fetch()` call must replace it completely, and the thank-you animation must be gated on a confirmed `2xx` response only. Gate success state on actual API success — never on a timer.
+
+6. **Team photos without explicit dimensions cause CLS** — Photos from different sources have unpredictable natural dimensions. Use Astro's `<Image>` component with explicit `width` and `height` for every team photo. Store source photos in `src/assets/team/` (not `public/`) so Astro can optimize them. Standardize to square crop before adding to the repo.
+
+7. **Placeholder stats surviving in multiple locations** — Social proof claims may exist in more than one file (index.astro, about.astro, meta descriptions, OG tags). `grep` the entire `src/` directory for old placeholder strings before making any changes to ensure complete removal.
+
+---
 
 ## Implications for Roadmap
 
-Based on research, recommended 3-phase structure with a clean dependency chain:
+Based on the combined research, v1.1 breaks cleanly into four phases ordered by dependency. Phases 3 and 4 are fully independent of each other and of Phases 1-2.
 
-### Phase 1: Infrastructure and Scaffold
-**Rationale:** The most dangerous pitfalls are all configuration-level decisions that must be made before any content is built. Getting the Astro output mode, Wrangler config, Tailwind integration, and BaseLayout SEO component wrong creates silent failures that are painful to debug once 4 pages of content are built on top. Locking in correct configuration first means every subsequent phase builds on a solid foundation. Architecture research confirms the build order should start here: global styles → shared components → BaseLayout.
-**Delivers:** Working Astro project deployed to Cloudflare Workers; BaseLayout with typed props; Nav and Footer; Tailwind v4 brand tokens configured; sitemap integration active; font loading strategy in place; Cloudflare Auto Minify disabled.
-**Addresses:** Site navigation, responsive design foundation, brand-consistent design tokens
-**Avoids:** Wrong output mode (Pitfall 1), wrangler misconfiguration (Pitfall 2), missing `site` property (Pitfall 5), Tailwind v4 integration confusion (Pitfall 8), font FOUT/CLS (Pitfall 10), Cloudflare Auto Minify breakage (Pitfall 4)
+### Phase 1: Foundation — Resend Domain Verification and Wrangler Config
 
-### Phase 2: Landing Page and Content Pages
-**Rationale:** Once the scaffold is verified (Cloudflare deploy working, styles applying, sitemap generating), build the highest-conversion-value content first. The landing page (index) drives the entire business case for the site. Features and About pages support the demo conversion funnel. Architecture research confirms pages should be built in priority order: index → features → about, each as section-component compositions on BaseLayout.
-**Delivers:** Full homepage (hero, value props, dual audience callout, how it works, social proof, CTA); Features page; About/story page; 404 page; robots.txt; Open Graph tags on all pages; mobile-responsive layouts.
-**Uses:** `Hero.astro`, `ValueProp.astro`, `FeatureCard.astro`, `CTASection.astro`, `motion` for scroll animations, `astro-seo` for head meta, Astro `<Image>` component with proper loading attributes
-**Avoids:** LCP image lazy-loading (Pitfall 3), image dimension/CLS issues (Pitfall 6), duplicate meta tags (Pitfall 9), missing 404 config (Pitfall 12)
+**Rationale:** Domain verification has real-world latency (DNS propagation, 5-15 minutes). Starting here allows verification to happen while other work proceeds. The `wrangler.jsonc` restructuring is a prerequisite for all backend work and should be validated with a stub endpoint before Resend is wired in — this confirms routing works before adding email complexity.
+**Delivers:** Verified Resend sending domain (DNS green in dashboard); updated `wrangler.jsonc` with `main`, `assets.binding`, `run_worker_first`; stub Worker returning `{ ok: true }` that confirms `POST /api/contact` routes correctly and static pages still serve correctly
+**Avoids:** Pitfall 1 (domain not verified blocks Worker deploy), Pitfall 3 (DNS Only for DKIM), misconfigured asset routing
 
-### Phase 3: Contact / Demo Request Form
-**Rationale:** The contact form is the conversion endpoint of the entire site, but it's architecturally self-contained — it does not block Phases 1 or 2. Building it last keeps the form's static-vs-backend decision deferred without holding up the rest of the site. The form ships as a static HTML UI only (no backend action URL); Resend integration is a post-launch addition.
-**Delivers:** Demo request form page (`contact.astro`) with ContactForm component; 5-field form (name, email, org, role, message); post-submit success confirmation state; CSS honeypot spam protection; CTA section linking to form from all other pages.
-**Avoids:** Over-engineered form (anti-feature), Calendly embed (anti-feature), missing honeypot (Pitfall 7), no confirmation state (UX pitfall)
+### Phase 2: Form Backend — Worker and Resend Integration
+
+**Rationale:** With domain verified and routing confirmed via the stub, wire Resend SDK into the Worker and replace the ContactForm simulation with a real fetch call. Isolating this as a discrete phase with end-to-end testing ensures the highest-risk engineering change is fully validated before anything else ships.
+**Delivers:** Working `POST /api/contact` endpoint; email delivered to `demo@rallytrivia.com`; ContactForm success and error states properly wired; honeypot field added; API key stored as Wrangler secret
+**Uses:** `resend@^6.9.0`, `RESEND_API_KEY` wrangler secret, `worker/index.ts`, updated `ContactForm.astro`
+**Avoids:** Pitfall 2 (key security), Pitfall 4 (CORS masking real errors), Pitfall 5 (fake success still running), Pitfall 12 (no error state on form)
+
+### Phase 3: Analytics
+
+**Rationale:** Fully independent of the backend work. One line in `BaseHead.astro`. Shipping before any public promotion ensures traffic data is captured from day one. Zero engineering risk.
+**Delivers:** Cloudflare Web Analytics beacon on every page; pageview and referrer data visible in CF dashboard within minutes of deploy; no cookie consent banner needed
+**Uses:** Cloudflare Web Analytics manual JS snippet (no npm package); token from CF dashboard
+**Avoids:** Pitfall 6 (auto-inject unreliable on Workers); ad blocker deflation documented as known limitation, not a blocker
+
+### Phase 4: Content Polish — Social Proof and Real Team Section
+
+**Rationale:** Pure content changes with no engineering dependencies. Can run entirely in parallel with Phases 1-3 if content (photos, approved copy) is available. Grouped together because both are content-first tasks blocked by asset availability, not code complexity.
+**Delivers:** Honest qualitative capability highlights replacing any placeholder stats throughout the site; real team member names, headshots, and titles on the About page; no fake testimonials or fabricated numbers anywhere
+**Avoids:** Pitfall 7 (team photo CLS — use Astro `<Image>` with dimensions), Pitfall 8 (surviving placeholder content — grep before changing), trust damage from fake stats
 
 ### Phase Ordering Rationale
 
-- **Infrastructure before content** because the 5 critical pitfalls are all configuration decisions that must be locked in correctly before content is built. Rebuilding on a correct scaffold is cheap; debugging misconfiguration under 4 pages of content is expensive.
-- **Landing page before form** because the form depends on the CTA existing on other pages to drive traffic to it, but the form itself doesn't unblock any other page.
-- **Form as a discrete deliverable** because it has a clear deferral (backend wiring) that allows the form UI to ship without Resend integration, keeping the v1 scope tight.
-- **No separate phase for SEO** because SEO work is distributed: sitemap/site property in Phase 1, meta tags and OG in Phase 2, canonical URLs baked into BaseLayout from the start. Separating it out would create unnecessary sequencing complexity.
+- **Phase 1 before Phase 2:** Domain verification has mandatory real-world latency. Starting it first means DNS can propagate while the stub Worker is being written and tested. The stub also validates routing in isolation before Resend adds complexity.
+- **Phases 3 and 4 are independent:** They can be done in any order, in parallel with each other, or concurrently with Phases 1-2. The ordering shown (3 before 4) is a suggestion based on engineering-vs-content effort, not a hard dependency.
+- **Phase 4 is gated by content availability, not engineering:** The markup changes for team section and social proof are trivial (data swaps in component arrays). The real constraint is whether real photos and approved copy are available. If content is ready first, Phase 4 can happen before Phases 1-2.
+- **Form backend is last within the backend work** despite being the highest-trust-impact feature: it has the most prerequisites (domain verification, wrangler config, secret setup) and benefits from the routing validation done in Phase 1.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 3 (form backend wiring):** Resend + Cloudflare Workers hybrid mode (`output: 'hybrid'` + `export const prerender = false` on API route) is a distinct configuration from pure static. Needs a targeted research phase before implementation to avoid the Sharp incompatibility issue and confirm CSRF handling with Astro 5 Actions.
-- **Phase 2 (motion animations):** Motion v12 vanilla JS API with Astro is well-documented in principle but the specific `inView()` + `animate()` usage for scroll-triggered section reveals may benefit from a quick implementation spike before full page build.
+- **Phase 2 (Form Backend):** The server-side input validation pattern, CORS headers on error responses, and security hardening (honeypot silent discard, `sending_access` key scope) are implementation details that benefit from careful reference to official Cloudflare and Resend docs during execution. The integration is well-documented but the details matter.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (infrastructure):** All configuration decisions are fully documented in official Cloudflare and Astro docs. STACK.md and PITFALLS.md provide exact config snippets. No ambiguity.
-- **Phase 2 (Astro pages and components):** Astro file-based routing and component composition are standard, well-documented patterns. ARCHITECTURE.md provides exact file structure and code examples.
+- **Phase 1 (Foundation Setup):** All configuration decisions are definitively documented in official Cloudflare Workers static assets docs. STACK.md and PITFALLS.md provide exact `wrangler.jsonc` snippets. No ambiguity.
+- **Phase 3 (Analytics):** Single script tag. Official Cloudflare docs are definitive. Zero implementation risk.
+- **Phase 4 (Content Polish):** Pure content changes. Astro `<Image>` component is well-documented. No research needed during planning.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Core choices verified against official Cloudflare and Astro docs; Tailwind v4 stable since Jan 2025; Wrangler 3.x documented. Only minor uncertainty on motion v12 Astro integration (MEDIUM for that library). |
-| Features | MEDIUM-HIGH | Table stakes and anti-features are well-established SaaS landing page patterns verified across multiple practitioner sources. No A/B test data specific to live trivia event niche — copy framing needs real-world validation after launch. |
-| Architecture | HIGH | All patterns sourced from official Astro and Cloudflare documentation. Static-first component composition is a fundamental, stable Astro pattern. Build order implications are clearly documented. |
-| Pitfalls | MEDIUM-HIGH | Cloudflare-specific pitfalls (output mode, wrangler config, Auto Minify) are HIGH confidence from official docs. Performance pitfalls (LCP, CLS, fonts) are MEDIUM confidence from verified practitioner sources and Lighthouse documentation. |
+| Stack | HIGH | `resend@6.9.2` verified via npm registry; v6.9.2 Cloudflare Workers compatibility confirmed via GitHub release changelog; all integration patterns sourced from official Cloudflare and Resend docs |
+| Features | HIGH | Core features verified against official docs; social proof and team section patterns confirmed via multiple practitioner sources; anti-features based on well-documented conversion research |
+| Architecture | HIGH | Worker-augmented static site pattern confirmed against official Cloudflare static assets binding docs; `run_worker_first` routing behavior is documented and verified; component-level change map is explicit |
+| Pitfalls | HIGH (technical) / MEDIUM (content) | Technical pitfalls sourced from official docs and community-verified failure reports (DKIM grey cloud, auto-inject failure, CORS masking); content pitfalls from practitioner sources — directionally reliable |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Form backend decision:** PROJECT.md defers form email delivery, but the architecture decision (static form UI only vs. hybrid mode with Workers function) should be made explicit before Phase 3 planning. If Rally Trivia wants Resend wired up at launch rather than post-launch, Phase 3 becomes significantly more complex (requires adapter, `output: 'hybrid'`, Sharp workaround). Recommend confirming this deferral in requirements.
-- **Real social proof content:** FEATURES.md flags that quantified stats ("$12K raised in one night") require real event data. If Rally Trivia has hosted events, gather actual numbers before Phase 2 begins. If not, qualitative testimonials are sufficient and honest for launch — but the content gap should be confirmed upfront.
-- **Production domain:** `astro.config.mjs` needs the exact production URL for sitemap and canonical tags (`https://rallytrivia.com` assumed from STACK.md). Confirm the canonical domain before Phase 1 scaffold is built.
-- **Astro v6 timing:** Astro v6 beta is in progress (requires Node 22+). If v6 goes stable before launch, it adds first-class workerd dev support and improved local/production parity. Monitor; don't block on it.
+- **Resend domain verification current state:** Research confirms the process but cannot check whether `rallytrivia.com` is already added in the Resend dashboard. First action in Phase 1 should be checking whether the domain is already set up or needs to be added from scratch.
+- **Real team content availability:** The engineering work for the team section is trivial. The blocker is whether real photos and approved bios are available. Confirm content readiness before scheduling Phase 4 — if photos need to be taken or sourced, that's a separate timeline dependency.
+- **Exact form field IDs in ContactForm.astro:** Research assumes `name`, `email`, `organization`, `eventType`, `message` based on the form UI. Verify actual field IDs in `ContactForm.astro` before writing the Worker's field extraction logic to avoid mismatches.
+- **Recipient email address for demo requests:** Research examples use `demo@rallytrivia.com`. Confirm the actual destination email address before deploying the Worker. This is a one-character difference that would cause all demo requests to silently go to the wrong inbox.
+- **`nodejs_compat` flag requirement:** PITFALLS.md notes the Resend SDK may require `"compatibility_flags": ["nodejs_compat"]` in `wrangler.jsonc`. STACK.md's Worker pattern (using standalone `worker/index.ts` with direct Wrangler bundling rather than the Astro adapter path) may not require this flag — the Wrangler esbuild bundler handles ESM imports natively. Verify during Phase 1 stub testing.
+
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Cloudflare Workers + Astro (Official)](https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/) — Static site deployment, no adapter required
-- [Astro Deploy to Cloudflare (Official Astro Docs)](https://docs.astro.build/en/guides/deploy/cloudflare/) — Workers vs Pages guidance, 404 handling, Auto Minify warning
-- [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/) — `assets.directory` config, wrangler.jsonc structure
-- [Astro Project Structure](https://docs.astro.build/en/basics/project-structure/) — Canonical file organization
-- [Astro Layouts](https://docs.astro.build/en/basics/layouts/) — BaseLayout slot composition pattern
-- [Astro Sitemap Integration](https://docs.astro.build/en/guides/integrations-guide/sitemap/) — `site` property requirement, sitemap generation
-- [Astro Images Guide](https://docs.astro.build/en/guides/images/) — loading attributes, CLS prevention, static vs SSR image service
-- [Tailwind CSS v4.0 Release Post](https://tailwindcss.com/blog/tailwindcss-v4) — CSS-first config, Vite plugin
-- [Cloudflare + Astro + Resend (Official CF Dev Spotlight)](https://developers.cloudflare.com/developer-spotlight/tutorials/handle-form-submission-with-astro-resend/) — Form delivery pattern
-- [Cloudflare Workers Best Practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/) — nodejs_compat, DNS routing
-- [Crowdpurr Live Trivia Platform](https://www.crowdpurr.com/) — Direct competitor, primary source
-- [SocialPoint Audience Engagement Platform](https://www.socialpoint.io/) — Adjacent competitor, primary source
+- [Cloudflare Workers: Send Emails with Resend (Official Tutorial)](https://developers.cloudflare.com/workers/tutorials/send-emails-with-resend/) — Worker pattern, secrets, SDK usage
+- [Resend: Send with Cloudflare Workers (Official)](https://resend.com/docs/send-with-cloudflare-workers) — SDK API, `env.RESEND_API_KEY` access pattern
+- [Cloudflare: Static Assets Binding and Configuration](https://developers.cloudflare.com/workers/static-assets/binding/) — `run_worker_first`, `ASSETS` binding, routing behavior
+- [Cloudflare Developer Spotlight: Astro + Resend Form (Official)](https://developers.cloudflare.com/developer-spotlight/tutorials/handle-form-submission-with-astro-resend/) — End-to-end form integration reference implementation
+- [Cloudflare Web Analytics: Get Started (Official)](https://developers.cloudflare.com/web-analytics/get-started/) — Manual beacon installation, token setup
+- [Cloudflare Web Analytics: FAQ (Official)](https://developers.cloudflare.com/web-analytics/faq/) — Auto-inject limitations, `defer` attribute semantics, ad blocker impact
+- [Resend: Domain Verification on Cloudflare (Official)](https://resend.com/docs/dashboard/domains/cloudflare) — DKIM grey cloud requirement, DNS record setup
+- [Resend: Account Quotas and Limits (Official)](https://resend.com/docs/knowledge-base/account-quotas-and-limits) — Free tier constraints, rate limits
+- [Astro Images Guide (Official)](https://docs.astro.build/en/guides/images/) — `<Image>` component, CLS prevention, width/height requirements
+- [npmjs.com / resend package](https://www.npmjs.com/package/resend) — Version `6.9.2` confirmed
+- [GitHub: resend/resend-node releases](https://github.com/resend/resend-node/releases) — v6.9.2 changelog confirms Cloudflare Workers + non-Node V8 isolate compatibility
 
 ### Secondary (MEDIUM confidence)
-- [Tailwind CSS Upgrade Guide](https://tailwindcss.com/docs/upgrade-guide) — v3→v4 integration changes
-- [motion npm package (v12.34.3)](https://www.npmjs.com/package/motion) — Vanilla JS API, 18M+ monthly downloads
-- [astro-seo (npm, v1.1.0)](https://www.npmjs.com/package/astro-seo) — Component API, Astro 5 compatibility
-- [InfoQ: Astro v6 Beta + Cloudflare Workers](https://www.infoq.com/news/2026/02/astro-v6-beta-cloudflare/) — v6 beta status, Node 22+ requirement
-- [SaaS Landing Pages Best Practices 2026 — Storylane](https://www.storylane.io/blog/saas-landing-pages-best-practices) — Table stakes feature expectations
-- [Demo Form Conversion Rate Benchmark — Chili Piper](https://www.chilipiper.com/post/form-conversion-rate-benchmark-report) — 5-field max guidance, directionally reliable
-- [Trivia Night Fundraisers Ultimate Guide — Donorbox](https://donorbox.org/nonprofit-blog/trivia-night-fundraisers) — Nonprofit buyer psychology
-- [Astro + Tailwind v4 Setup Guide — tailkits.com](https://tailkits.com/blog/astro-tailwind-setup/) — Vite plugin integration walkthrough
-- [Migrate Astro from Pages to Workers — cai.im](https://cai.im/blog/migrate-astro-site-from-cloudflare-pages-to-workers/) — Pages deprecation, Workers migration path
-
-### Tertiary (LOW confidence)
-- [B2B SaaS Demo Form Best Practices — Metaforms AI](https://metaforms.ai/blog/b2b-saas-demo-form) — Single practitioner source; directional guidance only
-- [Secure Astro 5 Contact Forms — farrosfr.com](https://farrosfr.com/blog/secure-astro-5-contact-forms-with-resend-and-upstash/) — Honeypot + spam prevention patterns; validate against official Astro docs during Phase 3
+- [Cloudflare Community: Web Analytics JS Token Not Injecting](https://community.cloudflare.com/t/web-analytics-not-injecting-the-js-token/860770) — Real-world auto-inject failure reports on Workers sites confirming manual-only approach
+- [HubSpot: Best "Meet the Team" Pages](https://blog.hubspot.com/marketing/creative-agency-team-pages) — Team section layout and credibility best practices
+- [Bryq: Meet the Team Page Best Practices](https://www.bryq.com/blog/meet-the-team) — Small team handling, photo quality guidelines
+- [Social Proof in 2025 — Marketing Rewired / Medium](https://medium.com/marketing-rewired/social-proof-in-2025-its-not-just-testimonials-anymore-715f315bc238) — Qualitative vs. quantitative social proof; nonprofit buyer detection of fake stats
+- [Cloudflare Community: Security Considerations for Contact Form](https://community.cloudflare.com/t/security-considerations-for-a-contact-form/415120) — Honeypot patterns, silent discard approach, CORS pitfalls
 
 ---
+
 *Research completed: 2026-02-22*
 *Ready for roadmap: yes*

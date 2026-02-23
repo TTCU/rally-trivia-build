@@ -3,77 +3,52 @@
 **Defined:** 2026-02-22
 **Core Value:** Visitors understand what Rally Trivia does and request a demo — every page funnels toward that conversion.
 
-## v1 Requirements
+## v1.1 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for Production Polish milestone. Each maps to roadmap phases.
 
-### Landing Page
+### Form Backend
 
-- [ ] **LAND-01**: Hero section with outcome-focused headline, subheadline, and demo request CTA button
-- [ ] **LAND-02**: Value proposition sections explaining why Rally Trivia
-- [ ] **LAND-03**: Dual-audience sections — "For Nonprofits" and "For Corporate Events" with tailored messaging
-- [ ] **LAND-04**: Social proof section with testimonials or stats (placeholder if no real data)
-- [ ] **LAND-05**: "How it works" step-by-step overview section
+- [x] **FORM-01**: Contact form submissions are delivered via email to a single configurable recipient
+- [x] **FORM-02**: Worker handles POST `/api/contact` and sends email via Resend API
+- [x] **FORM-03**: Form UI shows loading state during submission and success/error state after
+- [x] **FORM-04**: Resend API key is stored as a Cloudflare Workers secret (not in code)
 
-### Features Page
+### Analytics
 
-- [ ] **FEAT-01**: Dedicated features page with platform capabilities breakdown
-- [ ] **FEAT-02**: Visual feature showcases with icons or illustrations
+- [ ] **ANLX-01**: All pages include Cloudflare Web Analytics beacon script
+- [ ] **ANLX-02**: Pageviews and referrer data are visible in Cloudflare dashboard
 
-### About Page
+### Team
 
-- [ ] **ABOU-01**: About/story page with mission and background
-- [ ] **ABOU-02**: Team or founder section
+- [ ] **TEAM-01**: About page team section displays real team member names and titles
+- [ ] **TEAM-02**: About page team section displays real team member photos
 
-### Contact
+## Future Requirements
 
-- [x] **CONT-01**: Demo request form with name, email, organization, event type, and message fields
-- [x] **CONT-02**: Post-submit confirmation/thank you state
+Deferred to a later milestone. Tracked but not in current roadmap.
 
-### Site Infrastructure
+### Social Proof
 
-- [x] **INFR-01**: Astro project with static output deployed to Cloudflare Workers
-- [x] **INFR-02**: Tailwind CSS v4 with brand color tokens (navy, deep blue, electric blue)
-- [x] **INFR-03**: Shared navigation with logo, page links, and CTA button
-- [x] **INFR-04**: Shared footer with links and brand info
-- [x] **INFR-05**: BaseLayout with SEO meta tags on every page
-- [x] **INFR-06**: Sitemap generation via @astrojs/sitemap
-- [x] **INFR-07**: Responsive design across mobile, tablet, and desktop
-- [x] **INFR-08**: Scroll-triggered animations using Motion library
-- [x] **INFR-09**: Self-hosted fonts via Fontsource
-- [x] **INFR-10**: Brand logo and assets integrated throughout
+- **SOCL-01**: Replace placeholder stats with qualitative highlights or real data
+- **SOCL-02**: Remove any fake numbers from all pages
 
-## v2 Requirements
+### Security
 
-Deferred to future release. Tracked but not in current roadmap.
-
-### Content & Marketing
-
-- **BLOG-01**: Blog/content marketing section
-- **PRIC-01**: Pricing page with plans/tiers
-- **CASE-01**: Case studies from real events
-
-### Integrations
-
-- **FORM-01**: Form backend delivery via Resend on Cloudflare Workers
-- **CALB-01**: Calendly or scheduling embed for demo booking
-- **ANAL-01**: Analytics integration (Plausible, Fathom, or Cloudflare Web Analytics)
-- **CRM-01**: CRM integration for lead management
-
-### Authentication
-
-- **AUTH-01**: Login entry point for event hosts (link to app platform)
+- **SECR-01**: Honeypot field on contact form to prevent spam
+- **SECR-02**: Rate limiting on `/api/contact` endpoint
 
 ## Out of Scope
 
+Explicitly excluded. Documented to prevent scope creep.
+
 | Feature | Reason |
 |---------|--------|
-| Pricing page | Not ready to publish pricing yet |
-| Blog | Requires ongoing content production, looks worse empty |
-| Form backend wiring | Build UI now, decide on delivery mechanism later |
+| Auto-reply confirmation email | User chose no auto-reply — keep it simple |
+| SSR / Astro Cloudflare adapter | Standalone Worker handles the one API endpoint; no need to change build model |
 | CRM integration | Decide on tooling later |
-| Mobile app | Web-only marketing site |
-| Application backend | Separate platform, not this repository |
+| Pricing page | Not ready to publish pricing |
+| Blog/content marketing | Requires ongoing content production |
 
 ## Traceability
 
@@ -81,33 +56,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFR-01 | Phase 1 | Complete |
-| INFR-02 | Phase 1 | Complete |
-| INFR-03 | Phase 1 | Complete |
-| INFR-04 | Phase 1 | Complete |
-| INFR-05 | Phase 1 | Complete |
-| INFR-06 | Phase 1 | Complete |
-| INFR-07 | Phase 1 | Complete |
-| INFR-08 | Phase 1 | Complete |
-| INFR-09 | Phase 1 | Complete |
-| INFR-10 | Phase 1 | Complete |
-| LAND-01 | Phase 2 | Pending |
-| LAND-02 | Phase 2 | Pending |
-| LAND-03 | Phase 2 | Pending |
-| LAND-04 | Phase 2 | Pending |
-| LAND-05 | Phase 2 | Pending |
-| FEAT-01 | Phase 2 | Pending |
-| FEAT-02 | Phase 2 | Pending |
-| ABOU-01 | Phase 2 | Pending |
-| ABOU-02 | Phase 2 | Pending |
-| CONT-01 | Phase 3 | Complete |
-| CONT-02 | Phase 3 | Complete |
+| FORM-01 | Phase 5 | Complete |
+| FORM-02 | Phase 4 | Complete |
+| FORM-03 | Phase 5 | Complete |
+| FORM-04 | Phase 4 | Complete |
+| ANLX-01 | Phase 6 | Pending |
+| ANLX-02 | Phase 6 | Pending |
+| TEAM-01 | Phase 7 | Pending |
+| TEAM-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 21 total
-- Mapped to phases: 21
-- Unmapped: 0 ✓
+- v1.1 requirements: 8 total
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after roadmap creation*
+*Last updated: 2026-02-22 after roadmap creation — traceability complete*
