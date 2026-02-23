@@ -20,3 +20,22 @@
 
 ---
 
+
+## v1.1 Production Polish (Shipped: 2026-02-23)
+
+**Phases completed:** 4 phases, 5 plans
+**Lines of code:** 1,487 (Astro/TS/CSS)
+**Files changed:** 41
+**Timeline:** 2026-02-22
+
+**Key accomplishments:**
+- Cloudflare Worker with /api/* routing, combined dev workflow (astro + wrangler via concurrently)
+- Resend API key secured as Wrangler secret with verified sending domain DNS (DKIM, SPF, DMARC)
+- Full form-to-email pipeline: Resend SDK + Turnstile spam protection + loading/error/success UX
+- Cloudflare Web Analytics beacon on all pages with CTA event tracking hooks
+- Real team section: optimized photos, dual titles, LinkedIn profiles (all placeholders replaced)
+
+**Git range:** `9f98de4..ee1db98`
+
+---
+
