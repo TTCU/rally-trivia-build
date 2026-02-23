@@ -2,11 +2,24 @@
 // Cloudflare Web Analytics beacon
 // Token is intentionally hardcoded — CF Web Analytics tokens are public identifiers
 // that only route pageview data to your CF account.
-// REPLACE with your actual token from: CF Dashboard > Web Analytics > Add a site > rallytrivia.com
-const token = "96d53ac7da5a4d42a8062de1ec099589";
+const cfToken = "96d53ac7da5a4d42a8062de1ec099589";
+
+// Google Analytics 4
+const ga4Id = "G-SS42NZ9ZD1";
 ---
+
+<!-- Google Analytics 4 -->
+<script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+<script define:vars={{ ga4Id }}>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', ga4Id);
+</script>
+
+<!-- Cloudflare Web Analytics -->
 <script
   defer
   src="https://static.cloudflareinsights.com/beacon.min.js"
-  data-cf-beacon={JSON.stringify({ token })}
+  data-cf-beacon={JSON.stringify({ token: cfToken })}
 ></script>
