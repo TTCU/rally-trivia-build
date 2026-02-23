@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Visitors understand what Rally Trivia does and request a demo — every page funnels toward that conversion.
-**Current focus:** Phase 5 — Form Backend
+**Current focus:** Phase 7 — Content Polish
 
 ## Current Position
 
-Phase: 5 of 7 (Form Backend)
+Phase: 6 of 7 (Analytics — complete)
 Plan: 1 of 1 in current phase (phase complete)
-Status: In progress
-Last activity: 2026-02-23 — 05-01 Form-to-email pipeline complete with Turnstile spam protection
+Status: Complete (pending token replacement + production verification)
+Last activity: 2026-02-22 — 06-01 CF Web Analytics beacon + CTA event tracking hooks
 
-Progress: [█████░░░░░] 55% (3/3 v1.0 phases complete; Phase 4 Plans 1-2 done; Phase 5 Plan 1 done)
+Progress: [███████░░░] 70% (3/3 v1.0 phases complete; Phase 4 Plans 1-2 done; Phase 5 Plan 1 done; Phase 6 Plan 1 done)
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [█████░░░░░] 55% (3/3 v1.0 phases complete; Phase 
 | 2. Content Pages | 2 | - | - |
 | 3. Contact Form | 1 | - | - |
 | 5. Form Backend | 1 | ~5 min | ~5 min |
+| 6. Analytics | 1 | ~5 min | ~5 min |
 
 *Updated after each plan completion*
 
@@ -70,6 +71,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 05-01-PLAN.md — Form-to-email pipeline complete with Resend SDK + Turnstile
+Last session: 2026-02-22
+Stopped at: Completed 06-01-PLAN.md — CF Web Analytics beacon + CTA event tracking hooks
 Resume file: None
+Next: Phase 7 (Content Polish) — blocked on real team photos
