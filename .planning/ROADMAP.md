@@ -22,7 +22,7 @@
 
 - [x] **Phase 4: Worker Foundation** - Verify Resend domain, restructure wrangler config, confirm API routing with a stub endpoint (completed 2026-02-22)
 - [ ] **Phase 5: Form Backend** - Wire Resend SDK into the Worker and connect ContactForm to the real API endpoint
-- [ ] **Phase 6: Analytics** - Add Cloudflare Web Analytics beacon to every page
+- [x] **Phase 6: Analytics** - Add Cloudflare Web Analytics beacon to every page (completed 2026-02-22, pending token replacement)
 - [ ] **Phase 7: Content Polish** - Replace placeholder team section with real names, titles, and photos
 
 ## Phase Details
@@ -74,7 +74,9 @@ Plans:
   1. The About page team section displays real team member names and titles (no placeholder text)
   2. Each team member card shows an actual photo, not a placeholder avatar or initials block
   3. Team photos load without layout shift (explicit dimensions via Astro `<Image>` component)
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 07-01-PLAN.md — Replace placeholder team section with real names, titles, photos, and LinkedIn links
 
 ## Progress
 
@@ -85,5 +87,5 @@ Plans:
 | 3. Contact Form | v1.0 | 1/1 | Complete | 2026-02-22 |
 | 4. Worker Foundation | 2/2 | Complete   | 2026-02-22 | - |
 | 5. Form Backend | v1.1 | 0/1 | Planning complete | - |
-| 6. Analytics | v1.1 | 0/? | Not started | - |
+| 6. Analytics | v1.1 | 1/1 | Complete | 2026-02-22 |
 | 7. Content Polish | v1.1 | 0/? | Not started | - |
