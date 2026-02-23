@@ -62,7 +62,9 @@ Plans:
   1. The Cloudflare Web Analytics beacon script tag is present in the rendered HTML `<head>` on every page
   2. Pageview data is visible in the Cloudflare Web Analytics dashboard within minutes of a site visit
   3. Referrer source data appears in the dashboard for navigations that include a referrer header
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 06-01-PLAN.md — CF Web Analytics beacon + CTA event tracking hooks + verification test
 
 ### Phase 7: Content Polish
 **Goal**: The About page team section shows the real founding team — real names, real titles, real photos — so the site no longer signals "unfinished" to any visitor who reaches that page.
