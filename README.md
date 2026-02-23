@@ -16,7 +16,6 @@ Rally Trivia is a live trivia management platform built for nonprofit fundraiser
 
 - The primary product landing page
 - Brand home for Rally Trivia
-- Future marketing and documentation hub
 - Entry point for demos, inquiries, and onboarding
 
 This repository does **not** contain the application backend or event runtime code. It is dedicated to the public-facing website.
@@ -25,20 +24,13 @@ This repository does **not** contain the application backend or event runtime co
 
 ## Tech Stack
 
-The Rally Trivia website is built with:
-
-- **Astro** — Static-first site generation
+- **Astro 5** — Static-first site generation
 - **TypeScript**
-- **Tailwind CSS**
-- **Cloudflare Workers** — Deployment and edge delivery
-- **Cloudflare Pages / Workers Runtime** — Production hosting
-
-The architecture prioritizes:
-
-- Performance
-- Edge delivery
-- Static-first rendering
-- Minimal operational overhead
+- **Tailwind CSS v4** — via `@tailwindcss/vite`
+- **Cloudflare Workers** — Edge hosting with static assets + Worker API
+- **Resend** — Transactional email delivery
+- **Cloudflare Turnstile** — Spam protection on contact form
+- **Google Analytics 4** + **Cloudflare Web Analytics** — Dual analytics
 
 ---
 
@@ -47,8 +39,8 @@ The architecture prioritizes:
 ### Prerequisites
 
 - Node.js 20+
-- pnpm / npm / yarn
-- Cloudflare Wrangler CLI (for deployment)
+- npm
+- Cloudflare Wrangler CLI (for Worker development and deployment)
 
 Install dependencies:
 
@@ -56,17 +48,13 @@ Install dependencies:
 npm install
 ```
 
-Run locally:
+Run locally (starts both Astro dev server and Wrangler Worker):
 
 ```bash
 npm run dev
 ```
 
-The site will be available at:
-
-```
-http://localhost:4321
-```
+The site will be available at `http://localhost:4321` and the Worker API at `http://localhost:8787`.
 
 ---
 
@@ -74,14 +62,15 @@ http://localhost:4321
 
 ```
 .
-├── assets/
-│   └── images/          # Logo and brand images
-├── public/              # Static assets
+├── assets/images/        # Logo and brand images
+├── public/               # Static assets
 ├── src/
-│   ├── components/      # Reusable UI components
-│   ├── layouts/         # Page layouts
-│   ├── pages/           # Astro routes
-│   └── styles/          # Global styles
+│   ├── components/       # Reusable UI components (Nav, Footer, Analytics, ContactForm, etc.)
+│   ├── layouts/          # Page layout wrappers
+│   ├── pages/            # Astro routes (index, features, about, contact)
+│   ├── styles/           # Global styles
+│   └── worker/           # Cloudflare Worker (API endpoints)
+├── wrangler.jsonc        # Cloudflare Worker configuration
 ├── astro.config.mjs
 ├── package.json
 └── README.md
@@ -91,44 +80,9 @@ http://localhost:4321
 
 ## Deployment
 
-Rally Trivia is deployed via Cloudflare.
+Rally Trivia is deployed via Cloudflare Workers with static assets.
 
-### Option 1: Cloudflare Pages (Recommended)
-
-1. Connect this repository to Cloudflare Pages.
-2. Set build command:
-
-```
-npm run build
-```
-
-3. Set output directory:
-
-```
-dist
-```
-
-Cloudflare will handle edge deployment automatically.
-
----
-
-### Option 2: Cloudflare Workers (Wrangler)
-
-If deploying via Workers:
-
-Install Wrangler:
-
-```bash
-npm install -g wrangler
-```
-
-Authenticate:
-
-```bash
-wrangler login
-```
-
-Build site:
+Build the site:
 
 ```bash
 npm run build
@@ -140,35 +94,15 @@ Deploy:
 wrangler deploy
 ```
 
----
+### Required Secrets
 
-## Environment Variables
+Set these via `wrangler secret put <NAME>`:
 
-If needed, configure environment variables in:
-
-- Cloudflare Pages dashboard
-- Wrangler `wrangler.toml`
-
-Example:
-
-```
-PUBLIC_SITE_URL=https://rallytrivia.com
-```
-
----
-
-## Roadmap
-
-Future additions to this repository may include:
-
-- Pricing pages
-- Product feature deep dives
-- Case studies
-- Demo scheduling integration
-- Analytics integration
-- Blog / content marketing
-- Authentication entry for event hosts
-- API documentation surface
+| Secret | Purpose |
+|--------|---------|
+| `RESEND_API_KEY` | Resend API key for email delivery |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile server-side secret |
+| `RECIPIENT_EMAIL` | Email address that receives demo requests |
 
 ---
 
@@ -184,15 +118,13 @@ Rally Trivia is positioned as:
 
 Primary colors:
 
-- Navy
-- Deep blue
-- Electric blue accent
+- Navy (`#0a1628`)
+- Deep blue (`#1a3a6b`)
+- Electric blue (`#2563eb`)
+- Gold (`#f59e0b`)
+- Coral (`#f97316`)
 
-Logo assets live in:
-
-```
-/assets/images/
-```
+Logo assets live in `assets/images/`.
 
 ---
 

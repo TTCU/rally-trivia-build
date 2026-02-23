@@ -8,34 +8,39 @@ Rally Trivia marketing site and public web presence. This repo is for the public
 
 ## Tech Stack
 
-- **Astro** — Static-first site generation
+- **Astro 5** — Static-first site generation
 - **TypeScript**
-- **Tailwind CSS**
-- **Cloudflare Pages / Workers** — Hosting and edge delivery
+- **Tailwind CSS v4** — via `@tailwindcss/vite` plugin
+- **Cloudflare Workers** — Edge hosting with static assets + Worker API
+- **Resend** — Transactional email (contact form delivery)
+- **Cloudflare Turnstile** — Spam protection
+- **Google Analytics 4** + **Cloudflare Web Analytics** — Dual analytics
+- **Motion** — Scroll-triggered animations
 
 ## Development Commands
 
 ```bash
 npm install          # Install dependencies
-npm run dev          # Start dev server (http://localhost:4321)
+npm run dev          # Start Astro + Wrangler concurrently (site: 4321, worker: 8787)
 npm run build        # Production build (output: dist/)
 wrangler deploy      # Deploy to Cloudflare Workers
 ```
 
 ## Architecture
 
-This is an Astro static site deployed to Cloudflare's edge network. The planned structure follows Astro conventions:
+Astro static site deployed to Cloudflare Workers. Static pages are built at compile time; a standalone Worker handles `/api/*` routes (contact form submission via Resend + Turnstile verification).
 
-- `src/pages/` — File-based routing
-- `src/components/` — Reusable UI components
-- `src/layouts/` — Page layout wrappers
-- `src/styles/` — Global styles
+- `src/pages/` — File-based routing (index, features, about, contact)
+- `src/components/` — UI components (Nav, Footer, ContactForm, Analytics, EventTracking, etc.)
+- `src/layouts/` — BaseLayout with shared head, nav, footer, analytics
+- `src/styles/` — Global CSS with Tailwind v4
+- `src/worker/` — Cloudflare Worker entry point (`/api/contact` endpoint)
 - `public/` — Static assets served as-is
 - `assets/images/` — Brand logos and icons (PNG + SVG)
 
 ## Brand Guidelines
 
-- **Colors**: Navy, deep blue, electric blue accent
+- **Colors**: Navy `#0a1628`, deep blue `#1a3a6b`, electric blue `#2563eb`, gold `#f59e0b`, coral `#f97316`
 - **Tone**: Clean, modern, confident, approachable
 - **Audience**: Nonprofit fundraisers and corporate events
 - **License**: Proprietary — All rights reserved

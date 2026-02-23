@@ -1,10 +1,7 @@
 ---
 // Client-side event tracking hooks for CTA interactions.
-// CF Web Analytics does NOT support custom events (confirmed by official FAQ:
-// https://developers.cloudflare.com/web-analytics/faq/).
-// These hooks wire click handlers to elements with data-track-event attributes
-// so a future event destination (Zaraz, custom endpoint) can be enabled with
-// a one-line change in the handler below.
+// Sends events to Google Analytics 4 via gtag().
+// Elements with data-track-event and data-track-label attributes are automatically wired.
 ---
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -12,11 +9,9 @@
       el.addEventListener('click', () => {
         const eventName = el.dataset.trackEvent ?? 'click';
         const label = el.dataset.trackLabel ?? '';
-        // CF Web Analytics does not support custom events.
-        // Future: replace with zaraz.track(eventName, { label }) if Zaraz is enabled,
-        // or send to a custom analytics endpoint.
-        void eventName;
-        void label;
+        if (typeof gtag === 'function') {
+          gtag('event', eventName, { event_label: label });
+        }
       });
     });
   });

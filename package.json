@@ -1,6 +1,6 @@
 {
 	"name": "rally-trivia-build",
-	"description": "Build a personal website, blog, or portfolio with Astro.",
+	"description": "Rally Trivia marketing site — live trivia platform for nonprofit fundraisers and corporate events.",
 	"cloudflare": {
 		"label": "Astro Framework Starter",
 		"products": [
