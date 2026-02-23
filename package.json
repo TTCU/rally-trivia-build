@@ -17,6 +17,7 @@
 		"@tailwindcss/vite": "^4.2.0",
 		"astro": "5.16.2",
 		"motion": "^12.34.3",
+		"resend": "^6.9.2",
 		"tailwindcss": "^4.2.0",
 		"typescript": "5.9.3"
 	},
