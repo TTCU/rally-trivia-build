@@ -1,0 +1,12 @@
+---
+// Cloudflare Web Analytics beacon
+// Token is intentionally hardcoded — CF Web Analytics tokens are public identifiers
+// that only route pageview data to your CF account.
+// REPLACE with your actual token from: CF Dashboard > Web Analytics > Add a site > rallytrivia.com
+const token = "96d53ac7da5a4d42a8062de1ec099589";
+---
+<script
+  defer
+  src="https://static.cloudflareinsights.com/beacon.min.js"
+  data-cf-beacon={JSON.stringify({ token })}
+></script>
