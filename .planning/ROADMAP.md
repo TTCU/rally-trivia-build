@@ -50,7 +50,9 @@ Plans:
   2. The form shows a loading state while the request is in flight
   3. The thank-you animation only plays after a confirmed 2xx response from the Worker
   4. If the Worker returns an error, the form displays an error message without clearing the user's input
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 05-01-PLAN.md — Worker email sending + Turnstile verification + ContactForm real API integration
 
 ### Phase 6: Analytics
 **Goal**: Every page visit is captured in Cloudflare Web Analytics so traffic, referrers, and conversion paths are visible from day one.
@@ -80,6 +82,6 @@ Plans:
 | 2. Content Pages | v1.0 | 2/2 | Complete | 2026-02-22 |
 | 3. Contact Form | v1.0 | 1/1 | Complete | 2026-02-22 |
 | 4. Worker Foundation | 2/2 | Complete   | 2026-02-22 | - |
-| 5. Form Backend | v1.1 | 0/? | Not started | - |
+| 5. Form Backend | v1.1 | 0/1 | Planning complete | - |
 | 6. Analytics | v1.1 | 0/? | Not started | - |
 | 7. Content Polish | v1.1 | 0/? | Not started | - |
