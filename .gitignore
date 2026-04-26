@@ -202,3 +202,6 @@ dist
 *.swp
 *.swo
 Thumbs.db
+
+# Claude Code
+.claude/
